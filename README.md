@@ -126,4 +126,4 @@ Amazon XRAY also has a unique tracing ID that is propagated across the requests 
 
 ## Usage outside of Lambda handlers
 
-You can use the default logger outside of the AWS lambda function in any place you want. This is especially useful in private npm modules that will be used by your AWS Lambda function. The default logger is a shared instance, so it inherits all properties the default is configured for, and will emit request information for all logs. This effectively allows you to track a request across its entire set of log entries.
+You can use the this wrapper outside of the AWS lambda function in any place you want. This is especially useful in private npm modules that will be used by your AWS Lambda function. The default logger context is a shared instance, so it inherits all properties the default is configured for, and will emit request information for all logs. This effectively allows you to track a request across its entire set of log entries.
