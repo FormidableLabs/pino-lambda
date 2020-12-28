@@ -3,9 +3,15 @@ pino-lamdba
 
 A lightweight drop-in decorator for [pino](https://github.com/pinojs/pino) that takes advantage of the unique environment in AWS Lambda functions.
 
-This wrapper reformats the default pino output so it matches the existing Cloudwatch format. The default pino configuration loses some of the built in support for request ID tracing that lambda has built into Cloudwatch insights.
+This wrapper reformats the default pino output so it matches the existing Cloudwatch format. The default pino configuration [loses some of the built in support for request ID tracing](https://github.com/pinojs/pino/issues/648) that lambda has built into Cloudwatch insights.
 
 It also tracks the request id, correlation ids, and xray tracing from upstream services, and can be set to debug mode by upstream services on a per-request basis.
+
+### Conceptually based on the following
+
+- [Capture and forward correlation IDs through different Lambda event sources](https://theburningmonk.com/2017/09/capture-and-forward-correlation-ids-through-different-lambda-event-sources/)
+- [Decorated Lambda Handlers](https://tlvince.com/decorated-lambda-handlers)
+
 
 ## Usage
 
@@ -46,7 +52,7 @@ All instances of `pino-lambda` will be automatically log the request id so you d
 
 ```
 // handler.js
-import pino from 'pino';
+import pino from 'pino-lambda';
 const logger = pino();
 
 import { doSomething } from './service';
@@ -74,7 +80,7 @@ This alleviates the need to pass an instance of a logger around, or pass the con
 
 ```
 // service.js
-import pino from 'pino';
+import pino from 'pino-lambda';
 const logger = pino();
 
 export function doSomething() {
