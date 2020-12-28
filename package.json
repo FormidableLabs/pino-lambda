@@ -1,0 +1,68 @@
+{
+  "name": "pino-lambda",
+  "version": "1.0.0",
+  "description": "Lightweight pino wrapper for AWS Lambda",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "repository": "https://github.com/formidablelabs/pino-lambda.git",
+  "files": [
+    "/README.md",
+    "/dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "clean": "rimraf dist",
+    "lint": "eslint --ext .ts ./src",
+    "prebuild": "yarn clean",
+    "pretest:e2e": "yarn clean && yarn build",
+    "test:unit": "jest",
+    "test:e2e": "node ./dist/test.js"
+  },
+  "keywords": [],
+  "author": "Charles Brown <charles.brown@formidable.com>",
+  "license": "MIT",
+  "homepage": "https://github.com/formidablelabs/pino-lambda#readme",
+  "url": "https://github.com/formidablelabs/pino-lambda/issues",
+  "devDependencies": {
+    "@tsconfig/node12": "^1.0.7",
+    "@types/aws-lambda": "^8.10.68",
+    "@types/node": "12",
+    "@types/pino": "^6.0.0",
+    "@typescript-eslint/eslint-plugin": "^4.11.0",
+    "@typescript-eslint/parser": "^4.11.0",
+    "eslint": "^7.16.0",
+    "eslint-config-prettier": "^7.1.0",
+    "eslint-plugin-jest": "^24.1.3",
+    "eslint-plugin-prettier": "^3.3.0",
+    "pino": "^6.0.0",
+    "pino-pretty": "^4.0.0",
+    "prettier": "^2.2.1",
+    "rimraf": "^3.0.2",
+    "typescript": "^4.1.3"
+  },
+  "peerDependencies": {
+    "pino": "^6.0.0"
+  },
+  "prettier": {
+    "arrowParens": "always",
+    "endOfLine": "auto",
+    "printWidth": 100,
+    "semi": true,
+    "singleQuote": true,
+    "trailingComma": "all"
+  },
+  "eslintConfig": {
+    "root": true,
+    "parser": "@typescript-eslint/parser",
+    "plugins": [
+      "@typescript-eslint",
+      "jest"
+    ],
+    "extends": [
+      "eslint:recommended",
+      "plugin:@typescript-eslint/recommended",
+      "prettier",
+      "prettier/@typescript-eslint"
+    ]
+  }
+}
