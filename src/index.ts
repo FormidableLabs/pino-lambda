@@ -8,8 +8,8 @@ export interface ExtendedPinoOptions extends LoggerOptions {
 
 export interface LamdbaEvent {
   headers?: {
-    [key: string]: string
-  }
+    [key: string]: string;
+  };
 }
 
 export type PinoLambdaLogger = BaseLogger & {
@@ -22,6 +22,8 @@ const CORRELATION_ID = `${CORRELATION_HEADER}id`;
 const CORRELATION_TRACE_ID = `${CORRELATION_HEADER}trace-id`;
 const CORRELATION_DEBUG = `${CORRELATION_HEADER}debug`;
 
+const isLamdbaExecution = (): boolean => !!process.env.AWS_EXECUTION_ENV;
+
 /**
  * Custom destination stream for Pino
  * @param options Pino options
@@ -32,6 +34,7 @@ const pinolambda = (
   storageProvider: ContextStorageProvider,
 ): DestinationStream => ({
   write(buffer: string) {
+    const context = storageProvider.getContext() || {};
     if (options.prettyPrint) {
       // prettyPrint buffer is not ndjson formatted
       process.stdout.write(buffer);
@@ -42,7 +45,7 @@ const pinolambda = (
        * This preserves the default log format of cloudwatch
        */
       const { level, msg } = JSON.parse(buffer);
-      const { awsRequestId } = storageProvider.getContext();
+      const { awsRequestId } = context;
       const time = new Date().toISOString();
       let line = `${time}\t${awsRequestId}\t${level.toUpperCase()}\t${msg}\t${buffer}`;
       line = line.replace(/\n/, '\r');
@@ -58,6 +61,10 @@ const pinolambda = (
  * that provides convinience methods for use with AWS Lambda
  */
 export default (extendedPinoOptions?: ExtendedPinoOptions): PinoLambdaLogger => {
+  if (!isLamdbaExecution) {
+    return (pino(extendedPinoOptions) as unknown) as PinoLambdaLogger;
+  }
+
   const storageProvider: ContextStorageProvider =
     extendedPinoOptions?.storageProvider || GlobalContextStorageProvider;
 
