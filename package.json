@@ -1,6 +1,6 @@
 {
   "name": "pino-lambda",
-  "version": "1.0.0",
+  "version": "0.0.0-development",
   "description": "Lightweight pino wrapper for AWS Lambda",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -16,7 +16,8 @@
     "prebuild": "yarn clean",
     "pretest:e2e": "yarn clean && yarn build",
     "test:unit": "tap",
-    "test:e2e": "node ./dist/test.js"
+    "test:e2e": "node ./dist/test.js",
+    "semantic-release": "semantic-release"
   },
   "keywords": [],
   "author": "Charles Brown <charles.brown@formidable.com>",
@@ -40,7 +41,8 @@
     "prettier": "^2.2.1",
     "rimraf": "^3.0.2",
     "tap": "^14.11.0",
-    "typescript": "^4.1.3"
+    "typescript": "^4.1.3",
+    "semantic-release": "^17.3.1"
   },
   "peerDependencies": {
     "pino": "^6.0.0"
@@ -66,5 +68,8 @@
       "prettier",
       "prettier/@typescript-eslint"
     ]
+  },
+  "release": {
+    "branches": ["master", "beta"]
   }
 }
