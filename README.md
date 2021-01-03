@@ -1,6 +1,8 @@
 pino-lamdba
 -----------------------
 
+[![npm version](https://badge.fury.io/js/pino-lambda.svg)](https://badge.fury.io/js/pino-lambda)
+
 A lightweight drop-in decorator for [pino](https://github.com/pinojs/pino) that takes advantage of the unique environment in AWS Lambda functions.
 
 This wrapper reformats the default pino output so it matches the existing Cloudwatch format. The default pino configuration [loses some of the built in support for request ID tracing](https://github.com/pinojs/pino/issues/648) that lambda has built into Cloudwatch insights.
