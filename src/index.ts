@@ -1,5 +1,5 @@
 import { Context } from 'aws-lambda';
-import pino, { BaseLogger, DestinationStream, LoggerOptions } from 'pino';
+import pino, { BaseLogger, DestinationStream, LoggerOptions, LevelMapping } from 'pino';
 import { GlobalContextStorageProvider, ContextStorageProvider, ContextMap } from './context';
 
 export interface ExtendedPinoOptions extends LoggerOptions {
@@ -13,9 +13,11 @@ interface LamdbaEvent {
   [key: string]: any;
 }
 
-export type PinoLambdaLogger = BaseLogger & {
-  withRequest: (event: LamdbaEvent, context: Context) => void;
-};
+interface PinoLambdaExtensionOptions {
+  levels: LevelMapping;
+  options: ExtendedPinoOptions;
+  storageProvider: ContextStorageProvider;
+}
 
 const AMAZON_TRACE_ID = '_X_AMZN_TRACE_ID';
 const CORRELATION_HEADER = 'x-correlation-';
@@ -24,16 +26,25 @@ const CORRELATION_TRACE_ID = `${CORRELATION_HEADER}trace-id`;
 const CORRELATION_DEBUG = `${CORRELATION_HEADER}debug`;
 
 const isLamdbaExecution = (): boolean => !!process.env.AWS_EXECUTION_ENV;
+const formatLevel = (level: string | number, levels: LevelMapping): string => {
+  if (typeof level === 'string') {
+    return level.toLocaleUpperCase();
+  } else if (typeof level === 'number') {
+    return levels.labels[level]?.toLocaleUpperCase();
+  }
+  return level;
+};
 
 /**
  * Custom destination stream for Pino
  * @param options Pino options
  * @param storageProvider Global storage provider for request values
  */
-const pinolambda = (
-  options: ExtendedPinoOptions,
-  storageProvider: ContextStorageProvider,
-): DestinationStream => ({
+const pinolambda = ({
+  levels,
+  options,
+  storageProvider,
+}: PinoLambdaExtensionOptions): DestinationStream => ({
   write(buffer: string) {
     if (options.prettyPrint) {
       // prettyPrint buffer is not ndjson formatted
@@ -47,7 +58,8 @@ const pinolambda = (
       const { level, msg } = JSON.parse(buffer);
       const { awsRequestId } = storageProvider.getContext() || {};
       const time = new Date().toISOString();
-      let line = `${time}\t${awsRequestId}\t${level.toUpperCase()}\t${msg}\t${buffer}`;
+      const levelTag = formatLevel(level, levels);
+      let line = `${time}\t${awsRequestId}\t${levelTag}\t${msg}\t${buffer}`;
       line = line.replace(/\n/, '\r');
       process.stdout.write(line + '\n');
     }
@@ -55,6 +67,10 @@ const pinolambda = (
     return true;
   },
 });
+
+export type PinoLambdaLogger = BaseLogger & {
+  withRequest: (event: LamdbaEvent, context: Context) => void;
+};
 
 /**
  * Exports a default constructor with an extended instance of Pino
@@ -85,7 +101,7 @@ export default (extendedPinoOptions?: ExtendedPinoOptions): PinoLambdaLogger => 
   // construct a pino logger and set its destination
   const logger = (pino(
     pinoOptions,
-    pinolambda(pinoOptions, storageProvider),
+    pinolambda({ options: pinoOptions, storageProvider, levels: pino.levels }),
   ) as unknown) as PinoLambdaLogger;
 
   // keep a reference to the original logger level
