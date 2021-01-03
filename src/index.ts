@@ -10,6 +10,7 @@ interface LamdbaEvent {
   headers?: {
     [key: string]: string;
   };
+  [key: string]: any;
 }
 
 export type PinoLambdaLogger = BaseLogger & {
