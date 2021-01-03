@@ -58,27 +58,13 @@ const logger = pino();
 import { doSomething } from './service';
 
 async function handler(event, context) {
-  logger.info({ data: 'Some data' }, 'A log message');
+  logger.withRequest(event, context);
 
   doSomething();
 }
 ```
 
-Cloudwatch Output
-
-```
-2018-12-20T17:05:25.330Z    6fccb00e-0479-11e9-af91-d7ab5c8fe19e    [INFO] A log message
-{
-   "awsRequestId": "6fccb00e-0479-11e9-af91-d7ab5c8fe19e",
-   "x-correlation-id": "238da608-0542-11e9-8eb2-f2801f1b9fd1",
-   "x-correlation-trace-id": "Root=1-5c1bcbd2-9cce3b07143efd5bea1224f2;Parent=07adc05e4e92bf13;Sampled=1",
-   "level": "INFO",
-   "message": "Some A log message",
-   "data": "Some data"
-}
-```
-
-A second instance of the pino logger in another file automatically logs the request ID captured by the logger in the handler.
+A second instance of the pino logger in another file automatically logs the request ID captured by the logger in the above handler.
 This alleviates the need to pass an instance of a logger around, or pass the context.
 
 ```ts
