@@ -6,7 +6,7 @@ export interface ExtendedPinoOptions extends LoggerOptions {
   storageProvider?: ContextStorageProvider;
 }
 
-export interface LamdbaEvent {
+interface LamdbaEvent {
   headers?: {
     [key: string]: string;
   };
