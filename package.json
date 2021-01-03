@@ -1,6 +1,6 @@
 {
   "name": "pino-lambda",
-  "version": "0.0.0-development",
+  "version": "0.0.1",
   "description": "Lightweight pino wrapper for AWS Lambda",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -70,6 +70,6 @@
     ]
   },
   "release": {
-    "branches": ["master", "beta"]
+    "branches": ["master", { "name": "beta", "prerelease": true }]
   }
 }

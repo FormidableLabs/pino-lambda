@@ -34,7 +34,6 @@ const pinolambda = (
   storageProvider: ContextStorageProvider,
 ): DestinationStream => ({
   write(buffer: string) {
-    const context = storageProvider.getContext() || {};
     if (options.prettyPrint) {
       // prettyPrint buffer is not ndjson formatted
       process.stdout.write(buffer);
@@ -45,7 +44,7 @@ const pinolambda = (
        * This preserves the default log format of cloudwatch
        */
       const { level, msg } = JSON.parse(buffer);
-      const { awsRequestId } = context;
+      const { awsRequestId } = storageProvider.getContext() || {};
       const time = new Date().toISOString();
       let line = `${time}\t${awsRequestId}\t${level.toUpperCase()}\t${msg}\t${buffer}`;
       line = line.replace(/\n/, '\r');
