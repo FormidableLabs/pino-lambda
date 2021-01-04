@@ -4,19 +4,21 @@ import { GlobalContextStorageProvider, ContextStorageProvider, ContextMap } from
 
 export interface ExtendedPinoOptions extends LoggerOptions {
   storageProvider?: ContextStorageProvider;
+  streamWriter?: (str: string | Uint8Array) => boolean;
 }
 
 interface LamdbaEvent {
   headers?: {
     [key: string]: string;
   };
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [key: string]: any;
 }
 
 interface PinoLambdaExtensionOptions {
   levels: LevelMapping;
   options: ExtendedPinoOptions;
-  storageProvider: ContextStorageProvider;
 }
 
 const AMAZON_TRACE_ID = '_X_AMZN_TRACE_ID';
@@ -40,31 +42,30 @@ const formatLevel = (level: string | number, levels: LevelMapping): string => {
  * @param options Pino options
  * @param storageProvider Global storage provider for request values
  */
-const pinolambda = ({
-  levels,
-  options,
-  storageProvider,
-}: PinoLambdaExtensionOptions): DestinationStream => ({
+const pinolambda = ({ levels, options }: PinoLambdaExtensionOptions): DestinationStream => ({
   write(buffer: string) {
-    if (options.prettyPrint) {
-      // prettyPrint buffer is not ndjson formatted
-      process.stdout.write(buffer);
-    } else {
+    let output = buffer;
+    if (!options.prettyPrint) {
       /**
        * Writes to stdout using the same method that AWS lambda uses
        * under the hood for console.log
        * This preserves the default log format of cloudwatch
        */
       const { level, msg } = JSON.parse(buffer);
+      const storageProvider = options.storageProvider || GlobalContextStorageProvider;
       const { awsRequestId } = storageProvider.getContext() || {};
       const time = new Date().toISOString();
       const levelTag = formatLevel(level, levels);
-      let line = `${time}\t${awsRequestId}\t${levelTag}\t${msg}\t${buffer}`;
-      line = line.replace(/\n/, '\r');
-      process.stdout.write(line + '\n');
+
+      output = `${time}\t${awsRequestId}\t${levelTag}\t${msg}\t${buffer}`;
+      output = output.replace(/\n/, '\r');
+      output += '\n';
     }
 
-    return true;
+    if (options.streamWriter) {
+      return options.streamWriter(output);
+    }
+    return process.stdout.write(output);
   },
 });
 
@@ -81,11 +82,10 @@ export default (extendedPinoOptions?: ExtendedPinoOptions): PinoLambdaLogger => 
     return (pino(extendedPinoOptions) as unknown) as PinoLambdaLogger;
   }
 
-  const storageProvider: ContextStorageProvider =
-    extendedPinoOptions?.storageProvider || GlobalContextStorageProvider;
+  const options = extendedPinoOptions ?? {};
+  const storageProvider = extendedPinoOptions?.storageProvider || GlobalContextStorageProvider;
 
   // attach request values to logs
-  const options = extendedPinoOptions ?? {};
   const pinoOptions = {
     ...options,
     mixin: () => {
@@ -101,7 +101,7 @@ export default (extendedPinoOptions?: ExtendedPinoOptions): PinoLambdaLogger => 
   // construct a pino logger and set its destination
   const logger = (pino(
     pinoOptions,
-    pinolambda({ options: pinoOptions, storageProvider, levels: pino.levels }),
+    pinolambda({ options: pinoOptions, levels: pino.levels }),
   ) as unknown) as PinoLambdaLogger;
 
   // keep a reference to the original logger level
