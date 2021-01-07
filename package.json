@@ -20,7 +20,7 @@
     "test:e2e": "node ./dist/test.js",
     "semantic-release": "semantic-release"
   },
-  "keywords": [],
+  "keywords": ["pino", "lambda", "logging", "cloudwatch"],
   "author": "Charles Brown <charles.brown@formidable.com>",
   "license": "MIT",
   "homepage": "https://github.com/formidablelabs/pino-lambda#readme",
