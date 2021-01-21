@@ -1,6 +1,6 @@
 {
   "name": "pino-lambda",
-  "version": "1.1.5",
+  "version": "1.1.6",
   "description": "Lightweight pino wrapper for AWS Lambda",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -20,7 +20,12 @@
     "test:e2e": "node ./dist/test.js",
     "semantic-release": "semantic-release"
   },
-  "keywords": ["pino", "lambda", "logging", "cloudwatch"],
+  "keywords": [
+    "pino",
+    "lambda",
+    "logging",
+    "cloudwatch"
+  ],
   "author": "Charles Brown <charles.brown@formidable.com>",
   "license": "MIT",
   "homepage": "https://github.com/formidablelabs/pino-lambda#readme",
