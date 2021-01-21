@@ -1,4 +1,3 @@
-import { Context } from 'aws-lambda';
 import tap from 'tap';
 import sinon from 'sinon';
 import pino, { PinoLambdaLogger } from '../index';
@@ -24,7 +23,7 @@ tap.test('should log an info message with data', (t) => {
 tap.test('should log an info message with requestId', (t) => {
   const [log, output] = createLogger();
 
-  log.withRequest({}, { awsRequestId: '12345' } as Context);
+  log.withRequest({}, { awsRequestId: '12345' });
   log.info('Message with request ID');
   t.matchSnapshot(output.buffer);
   t.end();
@@ -33,7 +32,7 @@ tap.test('should log an info message with requestId', (t) => {
 tap.test('should log an error message with requestId', (t) => {
   const [log, output] = createLogger();
 
-  log.withRequest({}, { awsRequestId: '12345' } as Context);
+  log.withRequest({}, { awsRequestId: '12345' });
   log.error('Message with request ID');
   t.matchSnapshot(output.buffer);
   t.end();
