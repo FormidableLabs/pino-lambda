@@ -119,6 +119,12 @@ export default (extendedPinoOptions?: ExtendedPinoOptions): PinoLambdaLogger => 
       awsRequestId: context.awsRequestId,
     };
 
+    // capture api gateway request ID
+    const apiRequestId = event.requestContext?.requestId;
+    if (apiRequestId) {
+      ctx.apiRequestId = apiRequestId;
+    }
+
     // capture any correlation headers sent from upstream callers
     if (event.headers) {
       Object.keys(event.headers).forEach((header) => {
