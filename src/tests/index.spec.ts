@@ -38,6 +38,15 @@ tap.test('should log an error message with requestId', (t) => {
   t.end();
 });
 
+tap.test('should log an error message with apiRequestId', (t) => {
+  const [log, output] = createLogger();
+
+  log.withRequest({ requestContext: { requestId: '59996' } }, { awsRequestId: '12345' });
+  log.error('Message with apiRequestId');
+  t.matchSnapshot(output.buffer);
+  t.end();
+});
+
 /**
  * Creates a test logger and output buffer for assertions
  * Returns the logger and the buffer

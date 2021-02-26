@@ -9,6 +9,10 @@ exports[`src/tests/index.spec.ts TAP should log a simple info message > must mat
 2016-12-01T06:00:00.000Z	undefined	INFO	Simple message	{"level":30,"time":1480572000000,"msg":"Simple message"}
 `
 
+exports[`src/tests/index.spec.ts TAP should log an error message with apiRequestId > must match snapshot 1`] = `
+2016-12-01T06:00:00.000Z	12345	ERROR	Message with apiRequestId	{"level":50,"time":1480572000000,"awsRequestId":"12345","apiRequestId":"59996","x-correlation-id":"12345","msg":"Message with apiRequestId"}
+`
+
 exports[`src/tests/index.spec.ts TAP should log an error message with requestId > must match snapshot 1`] = `
 2016-12-01T06:00:00.000Z	12345	ERROR	Message with request ID	{"level":50,"time":1480572000000,"awsRequestId":"12345","x-correlation-id":"12345","msg":"Message with request ID"}
 `
