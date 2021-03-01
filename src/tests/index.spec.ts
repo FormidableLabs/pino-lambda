@@ -47,6 +47,16 @@ tap.test('should log an error message with apiRequestId', (t) => {
   t.end();
 });
 
+tap.test('should add tags with a child logger', (t) => {
+  const [log, output] = createLogger();
+  const childLogger = log.child({ userId: 12 });
+
+  log.withRequest({}, { awsRequestId: '9048989' });
+  childLogger.info('Message with userId');
+  t.matchSnapshot(output.buffer);
+  t.end();
+});
+
 /**
  * Creates a test logger and output buffer for assertions
  * Returns the logger and the buffer
