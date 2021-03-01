@@ -10,7 +10,7 @@ exports[`src/tests/index.spec.ts TAP should add tags with a child logger > must 
 `
 
 exports[`src/tests/index.spec.ts TAP should log a simple info message > must match snapshot 1`] = `
-2016-12-01T06:00:00.000Z	undefined	INFO	Simple message	{"level":30,"time":1480572000000,"msg":"Simple message"}
+2016-12-01T06:00:00.000Z	INFO	Simple message	{"level":30,"time":1480572000000,"msg":"Simple message"}
 `
 
 exports[`src/tests/index.spec.ts TAP should log an error message with apiRequestId > must match snapshot 1`] = `
@@ -22,7 +22,7 @@ exports[`src/tests/index.spec.ts TAP should log an error message with requestId 
 `
 
 exports[`src/tests/index.spec.ts TAP should log an info message with data > must match snapshot 1`] = `
-2016-12-01T06:00:00.000Z	undefined	INFO	Message with data	{"level":30,"time":1480572000000,"data":{"stuff":"unicorns"},"msg":"Message with data"}
+2016-12-01T06:00:00.000Z	INFO	Message with data	{"level":30,"time":1480572000000,"data":{"stuff":"unicorns"},"msg":"Message with data"}
 `
 
 exports[`src/tests/index.spec.ts TAP should log an info message with requestId > must match snapshot 1`] = `

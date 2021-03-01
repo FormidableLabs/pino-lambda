@@ -63,7 +63,7 @@ const pinolambda = ({ levels, options }: PinoLambdaExtensionOptions): Destinatio
       const time = new Date().toISOString();
       const levelTag = formatLevel(level, levels);
 
-      output = `${time}\t${awsRequestId}\t${levelTag}\t${msg}\t${buffer}`;
+      output = `${time}${awsRequestId ? `\t${awsRequestId}` : ''}\t${levelTag}\t${msg}\t${buffer}`;
       output = output.replace(/\n/, '\r');
       output += '\n';
     }
