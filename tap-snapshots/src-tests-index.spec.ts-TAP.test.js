@@ -5,6 +5,10 @@
  * Make sure to inspect the output below.  Do not ignore changes!
  */
 'use strict'
+exports[`src/tests/index.spec.ts TAP should add tags with a child logger > must match snapshot 1`] = `
+2016-12-01T06:00:00.000Z	9048989	INFO	Message with userId	{"level":30,"time":1480572000000,"userId":12,"awsRequestId":"9048989","x-correlation-id":"9048989","msg":"Message with userId"}
+`
+
 exports[`src/tests/index.spec.ts TAP should log a simple info message > must match snapshot 1`] = `
 2016-12-01T06:00:00.000Z	undefined	INFO	Simple message	{"level":30,"time":1480572000000,"msg":"Simple message"}
 `
