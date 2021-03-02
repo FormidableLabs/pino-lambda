@@ -1,4 +1,4 @@
-import pino, { BaseLogger, DestinationStream, LoggerOptions, LevelMapping } from 'pino';
+import pino, { DestinationStream, LevelMapping, LoggerOptions, Logger } from 'pino';
 import { GlobalContextStorageProvider, ContextStorageProvider, ContextMap } from './context';
 
 export interface ExtendedPinoOptions extends LoggerOptions {
@@ -75,7 +75,7 @@ const pinolambda = ({ levels, options }: PinoLambdaExtensionOptions): Destinatio
   },
 });
 
-export type PinoLambdaLogger = BaseLogger & {
+export type PinoLambdaLogger = Logger & {
   withRequest: (event: LamdbaEvent, context: LambdaContext) => void;
 };
 
