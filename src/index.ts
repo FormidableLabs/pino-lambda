@@ -1,4 +1,4 @@
-import pino, { BaseLogger, DestinationStream, LoggerOptions, LevelMapping, Bindings } from 'pino';
+import pino, { BaseLogger, DestinationStream, LoggerOptions, LevelMapping } from 'pino';
 import { GlobalContextStorageProvider, ContextStorageProvider, ContextMap } from './context';
 
 export interface ExtendedPinoOptions extends LoggerOptions {
