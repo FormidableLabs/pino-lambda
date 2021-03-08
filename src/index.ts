@@ -15,7 +15,7 @@ interface LambdaContext {
 
 interface LamdbaEvent {
   headers?: {
-    [key: string]: string;
+    [key: string]: string | undefined;
   };
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
