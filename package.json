@@ -1,6 +1,6 @@
 {
   "name": "pino-lambda",
-  "version": "1.2.2",
+  "version": "1.2.3",
   "description": "Lightweight pino wrapper for AWS Lambda",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
