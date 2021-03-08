@@ -130,7 +130,7 @@ export default (extendedPinoOptions?: ExtendedPinoOptions): PinoLambdaLogger => 
       Object.keys(event.headers).forEach((header) => {
         if (header.toLowerCase().startsWith(CORRELATION_HEADER)) {
           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          ctx[header] = event.headers![header];
+          ctx[header] = event.headers![header] as string;
         }
       });
     }
