@@ -2,6 +2,7 @@ import tap from 'tap';
 import sinon from 'sinon';
 import pino, { PinoLambdaLogger, ExtendedPinoOptions } from '../index';
 
+process.env.AWS_EXECUTION_ENV = 'AWS_Lambda_nodejs14';
 sinon.useFakeTimers(Date.UTC(2016, 11, 1, 6, 0, 0, 0));
 
 tap.test('should log a simple info message', (t) => {

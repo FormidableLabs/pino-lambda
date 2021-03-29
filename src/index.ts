@@ -84,7 +84,7 @@ export type PinoLambdaLogger = Logger & {
  * that provides convinience methods for use with AWS Lambda
  */
 export default (extendedPinoOptions?: ExtendedPinoOptions): PinoLambdaLogger => {
-  if (!isLamdbaExecution) {
+  if (!isLamdbaExecution()) {
     return (pino(extendedPinoOptions) as unknown) as PinoLambdaLogger;
   }
 
