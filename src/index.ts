@@ -33,7 +33,6 @@ const CORRELATION_ID = `${CORRELATION_HEADER}id`;
 const CORRELATION_TRACE_ID = `${CORRELATION_HEADER}trace-id`;
 const CORRELATION_DEBUG = `${CORRELATION_HEADER}debug`;
 
-const isLamdbaExecution = (): boolean => !!process.env.AWS_EXECUTION_ENV;
 const formatLevel = (level: string | number, levels: LevelMapping): string => {
   if (typeof level === 'string') {
     return level.toLocaleUpperCase();
@@ -84,10 +83,6 @@ export type PinoLambdaLogger = Logger & {
  * that provides convinience methods for use with AWS Lambda
  */
 export default (extendedPinoOptions?: ExtendedPinoOptions): PinoLambdaLogger => {
-  if (!isLamdbaExecution()) {
-    return (pino(extendedPinoOptions) as unknown) as PinoLambdaLogger;
-  }
-
   const options = extendedPinoOptions ?? {};
   const storageProvider = extendedPinoOptions?.storageProvider || GlobalContextStorageProvider;
 
