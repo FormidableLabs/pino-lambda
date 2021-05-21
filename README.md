@@ -1,4 +1,4 @@
-pino-lamdba
+pino-lambda
 -----------------------
 
 [![npm version](https://badge.fury.io/js/pino-lambda.svg)](https://badge.fury.io/js/pino-lambda)
