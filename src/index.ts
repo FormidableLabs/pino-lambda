@@ -4,6 +4,7 @@ import { GlobalContextStorageProvider, ContextStorageProvider, ContextMap } from
 export interface ExtendedPinoOptions extends LoggerOptions {
   storageProvider?: ContextStorageProvider;
   streamWriter?: (str: string | Uint8Array) => boolean;
+  headersToInclude?: string[];
 }
 
 interface LambdaContext {
@@ -100,10 +101,10 @@ export default (extendedPinoOptions?: ExtendedPinoOptions): PinoLambdaLogger => 
   };
 
   // construct a pino logger and set its destination
-  const logger = (pino(
+  const logger = pino(
     pinoOptions,
     pinolambda({ options: pinoOptions, levels: pino.levels }),
-  ) as unknown) as PinoLambdaLogger;
+  ) as unknown as PinoLambdaLogger;
 
   // keep a reference to the original logger level
   const configuredLevel = logger.level;
@@ -126,6 +127,11 @@ export default (extendedPinoOptions?: ExtendedPinoOptions): PinoLambdaLogger => 
         if (header.toLowerCase().startsWith(CORRELATION_HEADER)) {
           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           ctx[header] = event.headers![header] as string;
+        }
+        if (pinoOptions.headersToInclude) {
+          if (pinoOptions.headersToInclude.indexOf(header.toLowerCase()) > -1) {
+            ctx[header] = event.headers![header] as string;
+          }
         }
       });
     }

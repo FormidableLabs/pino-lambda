@@ -72,9 +72,9 @@ tap.test('should add tags with a child logger', (t) => {
 tap.test('should preserve mixins', (t) => {
   let n = 0;
   const [log, output] = createLogger({
-    mixin () {
-      return { line: ++n }
-    }
+    mixin() {
+      return { line: ++n };
+    },
   });
 
   log.withRequest({}, { awsRequestId: '431234' });
@@ -86,7 +86,7 @@ tap.test('should preserve mixins', (t) => {
 
 tap.test('should capture xray trace IDs', (t) => {
   process.env._X_AMZN_TRACE_ID = 'x-1-2e2323r1234r4';
-  
+
   const [log, output] = createLogger();
 
   log.withRequest({}, { awsRequestId: '431234' });
@@ -94,6 +94,22 @@ tap.test('should capture xray trace IDs', (t) => {
   t.matchSnapshot(output.buffer);
 
   process.env._X_AMZN_TRACE_ID = undefined;
+  t.end();
+});
+
+tap.test('should add host header', (t) => {
+  const [log, output] = createLogger({ headersToInclude: ['host'] });
+  log.withRequest({ headers: { host: 'www.host.com' } }, { awsRequestId: '431234' });
+  log.info('Message with host header');
+  t.matchSnapshot(output.buffer);
+  t.end();
+});
+
+tap.test('should work even if host header missing', (t) => {
+  const [log, output] = createLogger({ headersToInclude: ['host'] });
+  log.withRequest({}, { awsRequestId: '431234' });
+  log.info('Message without host header');
+  t.matchSnapshot(output.buffer);
   t.end();
 });
 

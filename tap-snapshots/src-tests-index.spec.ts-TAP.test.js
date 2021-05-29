@@ -5,6 +5,10 @@
  * Make sure to inspect the output below.  Do not ignore changes!
  */
 'use strict'
+exports[`src/tests/index.spec.ts TAP should add host header > must match snapshot 1`] = `
+2016-12-01T06:00:00.000Z	431234	INFO	Message with host header	{"level":30,"time":1480572000000,"awsRequestId":"431234","host":"www.host.com","x-correlation-trace-id":"undefined","x-correlation-id":"431234","msg":"Message with host header"}
+`
+
 exports[`src/tests/index.spec.ts TAP should add tags with a child logger > must match snapshot 1`] = `
 2016-12-01T06:00:00.000Z	9048989	INFO	Message with userId	{"level":30,"time":1480572000000,"userId":12,"awsRequestId":"9048989","x-correlation-id":"9048989","msg":"Message with userId"}
 `
@@ -39,4 +43,8 @@ exports[`src/tests/index.spec.ts TAP should log correlation headers > must match
 
 exports[`src/tests/index.spec.ts TAP should preserve mixins > must match snapshot 1`] = `
 2016-12-01T06:00:00.000Z	431234	INFO	Message with mixin line 2	{"level":30,"time":1480572000000,"line":2,"awsRequestId":"431234","x-correlation-id":"431234","msg":"Message with mixin line 2"}
+`
+
+exports[`src/tests/index.spec.ts TAP should work even if host header missing > must match snapshot 1`] = `
+2016-12-01T06:00:00.000Z	431234	INFO	Message without host header	{"level":30,"time":1480572000000,"awsRequestId":"431234","x-correlation-trace-id":"undefined","x-correlation-id":"431234","msg":"Message without host header"}
 `
