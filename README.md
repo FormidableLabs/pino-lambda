@@ -116,8 +116,9 @@ Amazon XRAY also has a unique tracing ID that is propagated across the requests 
 
 ## Customize request tracing
 
-You can customize the data that is tracked for each request by adding a global request mixin. 
+You can customize the data that is tracked for each request by adding a per-request mixin. 
 The request mixin takes the Lambda `event` and `context` and returns an object.
+
 This differs from the built in [pino mixin](https://github.com/pinojs/pino/blob/master/docs/api.md#mixin-function) as it only executes
 once per request where the built in pino mixin runs once per log entry.
 
@@ -132,6 +133,9 @@ const logger = pino({
       // you can also set any request property to undefined
       // which will remove it from the output
       'x-correlation-id': undefined,
+
+      // add any type of static data
+      brand: 'famicom'
     };
   }
 });
@@ -146,6 +150,7 @@ Output
    "x-correlation-trace-id": "Root=1-5c1bcbd2-9cce3b07143efd5bea1224f2;Parent=07adc05e4e92bf13;Sampled=1",
    "level": 30,
    "host": "www.host.com",
+   "brand": "famicom",
    "message": "Some A log message",
    "data": "Some data"
 }

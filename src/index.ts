@@ -156,6 +156,8 @@ export default (extendedPinoOptions?: ExtendedPinoOptions): PinoLambdaLogger => 
     if (pinoOptions.requestMixin) {
       const result = pinoOptions.requestMixin(event, context);
       for (const key in result) {
+        // Cast this to string for typescript
+        // when the JSON serializer runs, by default it omits undefined properties
         ctx[key] = result[key] as string;
       }
     }
