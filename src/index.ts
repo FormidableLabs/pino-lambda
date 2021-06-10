@@ -2,6 +2,10 @@ import pino, { DestinationStream, LevelMapping, LoggerOptions, Logger } from 'pi
 import { GlobalContextStorageProvider, ContextStorageProvider, ContextMap } from './context';
 
 export interface ExtendedPinoOptions extends LoggerOptions {
+  requestMixin?: (
+    event: LamdbaEvent,
+    context: LambdaContext,
+  ) => { [key: string]: string | undefined };
   storageProvider?: ContextStorageProvider;
   streamWriter?: (str: string | Uint8Array) => boolean;
 }
@@ -146,6 +150,14 @@ export default (extendedPinoOptions?: ExtendedPinoOptions): PinoLambdaLogger => 
       logger.level = 'debug';
     } else {
       logger.level = configuredLevel;
+    }
+
+    // handle custom request level mixins
+    if (pinoOptions.requestMixin) {
+      const result = pinoOptions.requestMixin(event, context);
+      for (const key in result) {
+        ctx[key] = result[key] as string;
+      }
     }
 
     storageProvider.setContext(ctx);
