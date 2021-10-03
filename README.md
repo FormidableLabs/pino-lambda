@@ -44,7 +44,7 @@ other Cloudwatch aware tools such as Datadog and Splunk.
    "x-correlation-id": "238da608-0542-11e9-8eb2-f2801f1b9fd1",
    "x-correlation-trace-id": "Root=1-5c1bcbd2-9cce3b07143efd5bea1224f2;Parent=07adc05e4e92bf13;Sampled=1",
    "level": 30,
-   "message": "Some A log message",
+   "message": "A log message",
    "data": "Some data"
 }
 ```
@@ -89,7 +89,7 @@ Cloudwatch Output
    "x-correlation-id": "238da608-0542-11e9-8eb2-f2801f1b9fd1",
    "x-correlation-trace-id": "Root=1-5c1bcbd2-9cce3b07143efd5bea1224f2;Parent=07adc05e4e92bf13;Sampled=1",
    "level": 30,
-   "message": "Some A log message",
+   "message": "A log message",
    "data": "Some data"
 }
 ```
@@ -151,7 +151,7 @@ Output
    "level": 30,
    "host": "www.host.com",
    "brand": "famicom",
-   "message": "Some A log message",
+   "message": "A log message",
    "data": "Some data"
 }
 ```
@@ -177,7 +177,7 @@ Output
    "level": 30,
    "host": "www.host.com",
    "brand": "famicom",
-   "message": "Some A log message",
+   "message": "A log message",
    "data": "Some data"
 }
 ```
@@ -208,7 +208,7 @@ Output
    "level": 30,
    "host": "www.host.com",
    "brand": "famicom",
-   "message": "Some A log message",
+   "message": "A log message",
    "data": "Some data"
 }
 ```
