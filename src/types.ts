@@ -2,7 +2,7 @@ import { LoggerOptions, Logger } from "pino";
 import { ContextStorageProvider } from "./context";
 
 export type PinoLambdaLogger = Logger & {
-  withRequest: (event: LamdbaEvent, context: LambdaContext) => void;
+  withRequest: (event: LambdaEvent, context: LambdaContext) => void;
 };
 
 export interface LambdaContext {
@@ -12,7 +12,7 @@ export interface LambdaContext {
   [key: string]: any;
 }
 
-export interface LamdbaEvent {
+export interface LambdaEvent {
   headers?: {
     [key: string]: string | undefined;
   };
@@ -46,7 +46,7 @@ export interface ILogFormatter {
 export interface ExtendedPinoOptions extends LoggerOptions {
   formatter?: ILogFormatter;
   requestMixin?: (
-    event: LamdbaEvent,
+    event: LambdaEvent,
     context: LambdaContext,
   ) => { [key: string]: string | undefined };
   storageProvider?: ContextStorageProvider;

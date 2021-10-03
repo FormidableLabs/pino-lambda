@@ -1,5 +1,5 @@
 import { ContextMap } from './context';
-import { LamdbaEvent, LambdaContext, PinoLambdaLogger, ExtendedPinoOptions } from './types';
+import { LambdaEvent, LambdaContext, PinoLambdaLogger, ExtendedPinoOptions } from './types';
 
 const AMAZON_TRACE_ID = '_X_AMZN_TRACE_ID';
 const CORRELATION_HEADER = 'x-correlation-';
@@ -8,7 +8,7 @@ const CORRELATION_TRACE_ID = `${CORRELATION_HEADER}trace-id`;
 const CORRELATION_DEBUG = `${CORRELATION_HEADER}debug`;
 
 export const withRequest = (logger: PinoLambdaLogger, options: ExtendedPinoOptions) => (
-  event: LamdbaEvent,
+  event: LambdaEvent,
   context: LambdaContext,
 ): void => {
   // keep a reference to the original logger level
