@@ -3,21 +3,21 @@ import { GlobalContextStorageProvider, ContextStorageProvider, ContextMap } from
 
 export interface ExtendedPinoOptions extends LoggerOptions {
   requestMixin?: (
-    event: LamdbaEvent,
+    event: LambdaEvent,
     context: LambdaContext,
   ) => { [key: string]: string | undefined };
   storageProvider?: ContextStorageProvider;
   streamWriter?: (str: string | Uint8Array) => boolean;
 }
 
-interface LambdaContext {
+export interface LambdaContext {
   awsRequestId: string;
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [key: string]: any;
 }
 
-interface LamdbaEvent {
+export interface LambdaEvent {
   headers?: {
     [key: string]: string | undefined;
   };
@@ -79,7 +79,7 @@ const pinolambda = ({ levels, options }: PinoLambdaExtensionOptions): Destinatio
 });
 
 export type PinoLambdaLogger = Logger & {
-  withRequest: (event: LamdbaEvent, context: LambdaContext) => void;
+  withRequest: (event: LambdaEvent, context: LambdaContext) => void;
 };
 
 /**
@@ -113,7 +113,7 @@ export default (extendedPinoOptions?: ExtendedPinoOptions): PinoLambdaLogger => 
   const configuredLevel = logger.level;
 
   // extend the base logger
-  logger.withRequest = (event: LamdbaEvent, context: LambdaContext): void => {
+  logger.withRequest = (event: LambdaEvent, context: LambdaContext): void => {
     const ctx: ContextMap = {
       awsRequestId: context.awsRequestId,
     };
