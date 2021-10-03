@@ -194,7 +194,7 @@ class BananaLogFormatter implements ILogFormatter {
 }
 
 const logger = pino({
-  formatter: new PinoLogFormatter(),
+  formatter: new BananaLogFormatter(),
 });
 ```
 
