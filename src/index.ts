@@ -1,86 +1,8 @@
-import pino, { DestinationStream, LevelMapping, LoggerOptions, Logger } from 'pino';
-import { GlobalContextStorageProvider, ContextStorageProvider, ContextMap } from './context';
-
-export interface ExtendedPinoOptions extends LoggerOptions {
-  requestMixin?: (
-    event: LamdbaEvent,
-    context: LambdaContext,
-  ) => { [key: string]: string | undefined };
-  storageProvider?: ContextStorageProvider;
-  streamWriter?: (str: string | Uint8Array) => boolean;
-}
-
-interface LambdaContext {
-  awsRequestId: string;
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  [key: string]: any;
-}
-
-interface LamdbaEvent {
-  headers?: {
-    [key: string]: string | undefined;
-  };
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  [key: string]: any;
-}
-
-interface PinoLambdaExtensionOptions {
-  levels: LevelMapping;
-  options: ExtendedPinoOptions;
-}
-
-const AMAZON_TRACE_ID = '_X_AMZN_TRACE_ID';
-const CORRELATION_HEADER = 'x-correlation-';
-const CORRELATION_ID = `${CORRELATION_HEADER}id`;
-const CORRELATION_TRACE_ID = `${CORRELATION_HEADER}trace-id`;
-const CORRELATION_DEBUG = `${CORRELATION_HEADER}debug`;
-
-const formatLevel = (level: string | number, levels: LevelMapping): string => {
-  if (typeof level === 'string') {
-    return level.toLocaleUpperCase();
-  } else if (typeof level === 'number') {
-    return levels.labels[level]?.toLocaleUpperCase();
-  }
-  return level;
-};
-
-/**
- * Custom destination stream for Pino
- * @param options Pino options
- * @param storageProvider Global storage provider for request values
- */
-const pinolambda = ({ levels, options }: PinoLambdaExtensionOptions): DestinationStream => ({
-  write(buffer: string) {
-    let output = buffer;
-    if (!options.prettyPrint) {
-      /**
-       * Writes to stdout using the same method that AWS lambda uses
-       * under the hood for console.log
-       * This preserves the default log format of cloudwatch
-       */
-      const { level, msg } = JSON.parse(buffer);
-      const storageProvider = options.storageProvider || GlobalContextStorageProvider;
-      const { awsRequestId } = storageProvider.getContext() || {};
-      const time = new Date().toISOString();
-      const levelTag = formatLevel(level, levels);
-
-      output = `${time}${awsRequestId ? `\t${awsRequestId}` : ''}\t${levelTag}\t${msg}\t${buffer}`;
-      output = output.replace(/\n/, '\r');
-      output += '\n';
-    }
-
-    if (options.streamWriter) {
-      return options.streamWriter(output);
-    }
-    return process.stdout.write(output);
-  },
-});
-
-export type PinoLambdaLogger = Logger & {
-  withRequest: (event: LamdbaEvent, context: LambdaContext) => void;
-};
+import pino from 'pino';
+import { GlobalContextStorageProvider } from './context';
+import { ExtendedPinoOptions, PinoLambdaLogger } from './types';
+import { withRequest } from './request';
+import { createStream } from './stream';
 
 /**
  * Exports a default constructor with an extended instance of Pino
@@ -88,7 +10,8 @@ export type PinoLambdaLogger = Logger & {
  */
 export default (extendedPinoOptions?: ExtendedPinoOptions): PinoLambdaLogger => {
   const options = extendedPinoOptions ?? {};
-  const storageProvider = extendedPinoOptions?.storageProvider || GlobalContextStorageProvider;
+  const storageProvider = (options.storageProvider =
+    extendedPinoOptions?.storageProvider || GlobalContextStorageProvider);
 
   // attach request values to logs
   const pinoOptions = {
@@ -104,65 +27,14 @@ export default (extendedPinoOptions?: ExtendedPinoOptions): PinoLambdaLogger => 
   };
 
   // construct a pino logger and set its destination
-  const logger = (pino(
-    pinoOptions,
-    pinolambda({ options: pinoOptions, levels: pino.levels }),
-  ) as unknown) as PinoLambdaLogger;
-
-  // keep a reference to the original logger level
-  const configuredLevel = logger.level;
+  const logger = (pino(pinoOptions, createStream(pinoOptions)) as unknown) as PinoLambdaLogger;
 
   // extend the base logger
-  logger.withRequest = (event: LamdbaEvent, context: LambdaContext): void => {
-    const ctx: ContextMap = {
-      awsRequestId: context.awsRequestId,
-    };
+  logger.withRequest = withRequest(logger, pinoOptions);
 
-    // capture api gateway request ID
-    const apiRequestId = event.requestContext?.requestId;
-    if (apiRequestId) {
-      ctx.apiRequestId = apiRequestId;
-    }
-
-    // capture any correlation headers sent from upstream callers
-    if (event.headers) {
-      Object.keys(event.headers).forEach((header) => {
-        if (header.toLowerCase().startsWith(CORRELATION_HEADER)) {
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          ctx[header] = event.headers![header] as string;
-        }
-      });
-    }
-
-    // capture the xray trace id if its enabled
-    if (process.env[AMAZON_TRACE_ID]) {
-      ctx[CORRELATION_TRACE_ID] = process.env[AMAZON_TRACE_ID] as string;
-    }
-
-    // set the correlation id if not already set by upstream callers
-    if (!ctx[CORRELATION_ID]) {
-      ctx[CORRELATION_ID] = context.awsRequestId;
-    }
-
-    // if an upstream service requests DEBUG mode,
-    // dynamically modify the logging level
-    if (ctx[CORRELATION_DEBUG] === 'true') {
-      logger.level = 'debug';
-    } else {
-      logger.level = configuredLevel;
-    }
-
-    // handle custom request level mixins
-    if (pinoOptions.requestMixin) {
-      const result = pinoOptions.requestMixin(event, context);
-      for (const key in result) {
-        // Cast this to string for typescript
-        // when the JSON serializer runs, by default it omits undefined properties
-        ctx[key] = result[key] as string;
-      }
-    }
-
-    storageProvider.setContext(ctx);
-  };
   return logger;
 };
+
+// reexport all public types
+export * from './formatters';
+export * from './types';
