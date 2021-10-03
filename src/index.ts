@@ -8,6 +8,7 @@ export interface ExtendedPinoOptions extends LoggerOptions {
   ) => { [key: string]: string | undefined };
   storageProvider?: ContextStorageProvider;
   streamWriter?: (str: string | Uint8Array) => boolean;
+  noPreamble?: boolean
 }
 
 interface LambdaContext {
@@ -54,7 +55,7 @@ const formatLevel = (level: string | number, levels: LevelMapping): string => {
 const pinolambda = ({ levels, options }: PinoLambdaExtensionOptions): DestinationStream => ({
   write(buffer: string) {
     let output = buffer;
-    if (!options.prettyPrint) {
+    if (!options.prettyPrint && !options.noPreamble) {
       /**
        * Writes to stdout using the same method that AWS lambda uses
        * under the hood for console.log

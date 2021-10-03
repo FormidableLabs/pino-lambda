@@ -124,6 +124,17 @@ tap.test('should allow removing default request data', (t) => {
   t.end();
 });
 
+tap.test('should allow removing cloudwatch preamble data', (t) => {
+  const [log, output] = createLogger({
+    noPreamble: true
+  });
+
+  log.withRequest({}, { awsRequestId: '431234' });
+  log.info('Message with trace ID');
+  t.matchSnapshot(output.buffer);
+  t.end();
+});
+
 /**
  * Creates a test logger and output buffer for assertions
  * Returns the logger and the buffer
