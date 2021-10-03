@@ -17,6 +17,10 @@ exports[`src/tests/index.spec.ts TAP should capture custom request data > must m
 2016-12-01T06:00:00.000Z	431234	INFO	Message with trace ID	{"level":30,"time":1480572000000,"awsRequestId":"431234","x-correlation-trace-id":"undefined","x-correlation-id":"431234","host":"www.host.com","msg":"Message with trace ID"}
 `
 
+exports[`src/tests/index.spec.ts TAP should capture custom request data in a nested property > must match snapshot 1`] = `
+2016-12-01T06:00:00.000Z	431234	INFO	Message with trace ID	{"level":30,"time":1480572000000,"awsRequestId":"431234","x-correlation-trace-id":"undefined","x-correlation-id":"431234","nested":{"host":"www.host.com"},"msg":"Message with trace ID"}
+`
+
 exports[`src/tests/index.spec.ts TAP should capture xray trace IDs > must match snapshot 1`] = `
 2016-12-01T06:00:00.000Z	431234	INFO	Message with trace ID	{"level":30,"time":1480572000000,"awsRequestId":"431234","x-correlation-trace-id":"x-1-2e2323r1234r4","x-correlation-id":"431234","msg":"Message with trace ID"}
 `

@@ -1,10 +1,13 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 const CONTEXT_SYMBOL = Symbol.for('aws.lambda.runtime.context');
 
-export interface ContextMap {
-  awsRequestId: string,
-  [key: string]: string
- };
+export interface NestedStringMap {
+  [key: string]: string | { [key: string]: string | undefined } | undefined;
+}
+
+export interface ContextMap extends NestedStringMap {
+  awsRequestId: string;
+}
 
 export interface ContextStorageProvider {
   getContext: () => ContextMap;

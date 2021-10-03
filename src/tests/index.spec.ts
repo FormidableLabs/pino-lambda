@@ -124,6 +124,22 @@ tap.test('should allow removing default request data', (t) => {
   t.end();
 });
 
+tap.test('should capture custom request data in a nested property', (t) => {
+  const [log, output] = createLogger({
+    requestMixin: (event, context) => ({
+      nested: {
+        host: event.headers?.host,
+        functionName: context.functionName,
+      },
+    }),
+  });
+
+  log.withRequest({ headers: { host: 'www.host.com' } }, { awsRequestId: '431234' });
+  log.info('Message with trace ID');
+  t.matchSnapshot(output.buffer);
+  t.end();
+});
+
 /**
  * Creates a test logger and output buffer for assertions
  * Returns the logger and the buffer

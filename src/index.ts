@@ -1,11 +1,13 @@
 import pino, { DestinationStream, LevelMapping, LoggerOptions, Logger } from 'pino';
-import { GlobalContextStorageProvider, ContextStorageProvider, ContextMap } from './context';
+import {
+  ContextMap,
+  ContextStorageProvider,
+  GlobalContextStorageProvider,
+  NestedStringMap,
+} from './context';
 
 export interface ExtendedPinoOptions extends LoggerOptions {
-  requestMixin?: (
-    event: LamdbaEvent,
-    context: LambdaContext,
-  ) => { [key: string]: string | undefined };
+  requestMixin?: (event: LamdbaEvent, context: LambdaContext) => NestedStringMap;
   storageProvider?: ContextStorageProvider;
   streamWriter?: (str: string | Uint8Array) => boolean;
 }
@@ -156,9 +158,8 @@ export default (extendedPinoOptions?: ExtendedPinoOptions): PinoLambdaLogger => 
     if (pinoOptions.requestMixin) {
       const result = pinoOptions.requestMixin(event, context);
       for (const key in result) {
-        // Cast this to string for typescript
-        // when the JSON serializer runs, by default it omits undefined properties
-        ctx[key] = result[key] as string;
+        // override any context properties with request level values
+        ctx[key] = result[key];
       }
     }
 
