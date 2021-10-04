@@ -6,7 +6,7 @@ pino-lambda
 
 A lightweight drop-in decorator for [pino](https://github.com/pinojs/pino) that takes advantage of the unique environment in AWS Lambda functions.
 
-This wrapper reformats the default pino output so it matches the existing Cloudwatch format. The default pino configuration [loses some of the built in support for request ID tracing](https://github.com/pinojs/pino/issues/648) that lambda has built into Cloudwatch insights.
+By default, this wrapper reformats the log output so it matches the existing Cloudwatch format. The default pino configuration [loses some of the built in support for request ID tracing](https://github.com/pinojs/pino/issues/648) that lambda has built into Cloudwatch insights. This can be disabled or customized as needed.
 
 It also tracks the request id, correlation ids, and xray tracing from upstream services, and can be set to debug mode by upstream services on a per-request basis.
 
@@ -44,7 +44,7 @@ other Cloudwatch aware tools such as Datadog and Splunk.
    "x-correlation-id": "238da608-0542-11e9-8eb2-f2801f1b9fd1",
    "x-correlation-trace-id": "Root=1-5c1bcbd2-9cce3b07143efd5bea1224f2;Parent=07adc05e4e92bf13;Sampled=1",
    "level": 30,
-   "message": "Some A log message",
+   "message": "A log message",
    "data": "Some data"
 }
 ```
@@ -89,7 +89,7 @@ Cloudwatch Output
    "x-correlation-id": "238da608-0542-11e9-8eb2-f2801f1b9fd1",
    "x-correlation-trace-id": "Root=1-5c1bcbd2-9cce3b07143efd5bea1224f2;Parent=07adc05e4e92bf13;Sampled=1",
    "level": 30,
-   "message": "Some A log message",
+   "message": "A log message",
    "data": "Some data"
 }
 ```
@@ -151,7 +151,64 @@ Output
    "level": 30,
    "host": "www.host.com",
    "brand": "famicom",
-   "message": "Some A log message",
+   "message": "A log message",
+   "data": "Some data"
+}
+```
+
+## Customize output format
+
+If you want the request tracing features, but don't need the Cloudwatch format, you can use the default pino formatter, or supply your own formatter.
+
+```ts
+// default Pino formatter for logs
+import pino, { PinoLogFormatter } from 'pino-lambda';
+const logger = pino({
+  formatter: new PinoLogFormatter(),
+});
+```
+
+Output
+
+```
+{
+   "awsRequestId": "6fccb00e-0479-11e9-af91-d7ab5c8fe19e",
+   "x-correlation-trace-id": "Root=1-5c1bcbd2-9cce3b07143efd5bea1224f2;Parent=07adc05e4e92bf13;Sampled=1",
+   "level": 30,
+   "host": "www.host.com",
+   "brand": "famicom",
+   "message": "A log message",
+   "data": "Some data"
+}
+```
+
+The formatter function can be replaced with any custom implementation you require by using the supplied interface.
+
+```ts
+import pino, { ExtendedPinoLambdaOptions, ILogFormatter } from 'pino-lambda';
+
+class BananaLogFormatter implements ILogFormatter {
+  format(buffer: string, options: ExtendedPinoLambdaOptions) {
+    return `[BANANA] ${buffer}`;
+  }
+}
+
+const logger = pino({
+  formatter: new BananaLogFormatter(),
+});
+```
+
+Output
+
+```
+[BANANA]
+{
+   "awsRequestId": "6fccb00e-0479-11e9-af91-d7ab5c8fe19e",
+   "x-correlation-trace-id": "Root=1-5c1bcbd2-9cce3b07143efd5bea1224f2;Parent=07adc05e4e92bf13;Sampled=1",
+   "level": 30,
+   "host": "www.host.com",
+   "brand": "famicom",
+   "message": "A log message",
    "data": "Some data"
 }
 ```

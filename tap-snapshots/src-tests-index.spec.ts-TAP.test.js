@@ -9,6 +9,14 @@ exports[`src/tests/index.spec.ts TAP should add tags with a child logger > must 
 2016-12-01T06:00:00.000Z	9048989	INFO	Message with userId	{"level":30,"time":1480572000000,"userId":12,"awsRequestId":"9048989","x-correlation-id":"9048989","msg":"Message with userId"}
 `
 
+exports[`src/tests/index.spec.ts TAP should allow custom formatter > must match snapshot 1`] = `
+[BANANA] {"level":30,"time":1480572000000,"awsRequestId":"431234","x-correlation-trace-id":"undefined","x-correlation-id":"431234","msg":"Message with custom formatter"}
+`
+
+exports[`src/tests/index.spec.ts TAP should allow default pino formatter > must match snapshot 1`] = `
+{"level":30,"time":1480572000000,"awsRequestId":"431234","x-correlation-trace-id":"undefined","x-correlation-id":"431234","msg":"Message with pino formatter"}
+`
+
 exports[`src/tests/index.spec.ts TAP should allow removing default request data > must match snapshot 1`] = `
 2016-12-01T06:00:00.000Z	431234	INFO	Message with trace ID	{"level":30,"time":1480572000000,"awsRequestId":"431234","x-correlation-trace-id":"undefined","msg":"Message with trace ID"}
 `

@@ -1,6 +1,8 @@
 import tap from 'tap';
 import sinon from 'sinon';
-import pino, { PinoLambdaLogger, ExtendedPinoOptions } from '../index';
+import pino, { PinoLambdaLogger } from '../index';
+import { ExtendedPinoOptions } from '../types';
+import { PinoLogFormatter } from '../formatters';
 
 sinon.useFakeTimers(Date.UTC(2016, 11, 1, 6, 0, 0, 0));
 
@@ -120,6 +122,34 @@ tap.test('should allow removing default request data', (t) => {
 
   log.withRequest({}, { awsRequestId: '431234' });
   log.info('Message with trace ID');
+  t.matchSnapshot(output.buffer);
+  t.end();
+});
+
+tap.test('should allow default pino formatter', (t) => {
+  const [log, output] = createLogger({
+    formatter: new PinoLogFormatter(),
+  });
+
+  log.withRequest({}, { awsRequestId: '431234' });
+  log.info('Message with pino formatter');
+  t.matchSnapshot(output.buffer);
+  t.end();
+});
+
+tap.test('should allow custom formatter', (t) => {
+  const bananaFormatter = {
+    format(buffer: string) {
+      return `[BANANA] ${buffer}`;
+    }
+  };
+
+  const [log, output] = createLogger({
+    formatter: bananaFormatter,
+  });
+
+  log.withRequest({}, { awsRequestId: '431234' });
+  log.info('Message with custom formatter');
   t.matchSnapshot(output.buffer);
   t.end();
 });
