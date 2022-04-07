@@ -3,6 +3,7 @@ pino-lambda
 
 [![npm version](https://badge.fury.io/js/pino-lambda.svg)](https://badge.fury.io/js/pino-lambda)
 [![semantic-release](https://img.shields.io/badge/%20%20%F0%9F%93%A6%F0%9F%9A%80-semantic--release-e10079.svg)](https://github.com/semantic-release/semantic-release)
+[![Maintenance Status][maintenance-image]](#maintenance-status)
 
 A lightweight drop-in decorator for [pino](https://github.com/pinojs/pino) that takes advantage of the unique environment in AWS Lambda functions.
 
@@ -225,3 +226,5 @@ You can use the this wrapper outside of the AWS lambda function in any place you
 ## Maintenance Status
 
 **Active:** Formidable is actively working on this project, and we expect to continue for work for the foreseeable future. Bug reports, feature requests and pull requests are welcome.
+
+[maintenance-image]: https://img.shields.io/badge/maintenance-active-green.svg?color=brightgreen&style=flat
