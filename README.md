@@ -105,7 +105,7 @@ By default, the following event data is tracked for each log statement.
 | apiRequestId              | context.requestContext.requestId           | The API Gateway RequestId                                                |
 | x-correlation-id          | event.headers['x-correlation-id']          | The upstream request id for tracing                                      |
 | x-correlation-trace-debug | event.headers['x-correlation-debug']       | The upstream service wants debug logs enabled for this request           |
-| x-correlation-trace-id    | process.env._X_AMZN_TRACE_ID_              | The AWS Xray tracking id                                                 |
+| x-correlation-trace-id    | process.env._X_AMZN_TRACE_ID               | The AWS Xray tracking id                                                 |
 | x-correlation-\*          | event.headers.startsWith('x-correlation-') | Any header that starts with `x-correlation-` will be automatically added |
 
 Every AWS Lambda request contains a unique request ID, `context.awsRequestId`. If the request originated outside of the AWS platform,
