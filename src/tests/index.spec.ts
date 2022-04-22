@@ -1,13 +1,22 @@
+import pino, { Logger, LoggerOptions } from 'pino';
 import tap from 'tap';
 import sinon from 'sinon';
-import pino, { PinoLambdaLogger } from '../index';
-import { ExtendedPinoOptions } from '../types';
-import { PinoLogFormatter } from '../formatters';
+
+import {
+  pinoLambdaDestination,
+  PinoLambdaOptions,
+  lambdaRequestTracker,
+  LambdaRequestTrackerOptions,
+  LambdaContext,
+  LambdaEvent,
+  PinoLogFormatter,
+  LogData,
+} from '../';
 
 sinon.useFakeTimers(Date.UTC(2016, 11, 1, 6, 0, 0, 0));
 
 tap.test('should log a simple info message', (t) => {
-  const [log, output] = createLogger();
+  const { log, output } = createLogger();
 
   log.info('Simple message');
   t.matchSnapshot(output.buffer);
@@ -15,7 +24,7 @@ tap.test('should log a simple info message', (t) => {
 });
 
 tap.test('should log an info message with data', (t) => {
-  const [log, output] = createLogger();
+  const { log, output } = createLogger();
 
   log.info({ data: { stuff: 'unicorns' } }, 'Message with data');
   t.matchSnapshot(output.buffer);
@@ -23,27 +32,27 @@ tap.test('should log an info message with data', (t) => {
 });
 
 tap.test('should log an info message with requestId', (t) => {
-  const [log, output] = createLogger();
+  const { log, output, withRequest } = createLogger();
 
-  log.withRequest({}, { awsRequestId: '12345' });
+  withRequest({}, { awsRequestId: '12345' });
   log.info('Message with request ID');
   t.matchSnapshot(output.buffer);
   t.end();
 });
 
 tap.test('should log an error message with requestId', (t) => {
-  const [log, output] = createLogger();
+  const { log, output, withRequest } = createLogger();
 
-  log.withRequest({}, { awsRequestId: '12345' });
+  withRequest({}, { awsRequestId: '12345' });
   log.error('Message with request ID');
   t.matchSnapshot(output.buffer);
   t.end();
 });
 
 tap.test('should log correlation headers', (t) => {
-  const [log, output] = createLogger();
+  const { log, output, withRequest } = createLogger();
 
-  log.withRequest(
+  withRequest(
     { headers: { 'x-correlation-data': 'abbb', 'x-correlation-service': 'tyue' } },
     { awsRequestId: '98875' },
   );
@@ -53,19 +62,19 @@ tap.test('should log correlation headers', (t) => {
 });
 
 tap.test('should log an error message with apiRequestId', (t) => {
-  const [log, output] = createLogger();
+  const { log, output, withRequest } = createLogger();
 
-  log.withRequest({ requestContext: { requestId: '59996' } }, { awsRequestId: '12345' });
+  withRequest({ requestContext: { requestId: '59996' } }, { awsRequestId: '12345' });
   log.error('Message with apiRequestId');
   t.matchSnapshot(output.buffer);
   t.end();
 });
 
 tap.test('should add tags with a child logger', (t) => {
-  const [log, output] = createLogger();
+  const { log, output, withRequest } = createLogger();
   const childLogger = log.child({ userId: 12 });
 
-  log.withRequest({}, { awsRequestId: '9048989' });
+  withRequest({}, { awsRequestId: '9048989' });
   childLogger.info('Message with userId');
   t.matchSnapshot(output.buffer);
   t.end();
@@ -73,65 +82,52 @@ tap.test('should add tags with a child logger', (t) => {
 
 tap.test('should preserve mixins', (t) => {
   let n = 0;
-  const [log, output] = createLogger({
+  const { log, output, withRequest } = createLogger({
     mixin() {
       return { line: ++n };
     },
   });
 
-  log.withRequest({}, { awsRequestId: '431234' });
+  withRequest({}, { awsRequestId: '431234' });
   log.info('Message with mixin line 1');
   log.info('Message with mixin line 2');
   t.matchSnapshot(output.buffer);
   t.end();
 });
 
-tap.test('should capture xray trace IDs', (t) => {
-  process.env._X_AMZN_TRACE_ID = 'x-1-2e2323r1234r4';
-
-  const [log, output] = createLogger();
-
-  log.withRequest({}, { awsRequestId: '431234' });
-  log.info('Message with trace ID');
-  t.matchSnapshot(output.buffer);
-
-  process.env._X_AMZN_TRACE_ID = undefined;
-  t.end();
-});
-
 tap.test('should capture custom request data', (t) => {
-  const [log, output] = createLogger({
+  const { log, output, withRequest } = createLogger(undefined, {
     requestMixin: (event, context) => ({
       host: event.headers?.host,
       functionName: context.functionName,
     }),
   });
 
-  log.withRequest({ headers: { host: 'www.host.com' } }, { awsRequestId: '431234' });
+  withRequest({ headers: { host: 'www.host.com' } }, { awsRequestId: '431234' });
   log.info('Message with trace ID');
   t.matchSnapshot(output.buffer);
   t.end();
 });
 
 tap.test('should allow removing default request data', (t) => {
-  const [log, output] = createLogger({
+  const { log, output, withRequest } = createLogger(undefined, {
     requestMixin: () => ({
       'x-correlation-id': undefined,
     }),
   });
 
-  log.withRequest({}, { awsRequestId: '431234' });
+  withRequest({}, { awsRequestId: '431234' });
   log.info('Message with trace ID');
   t.matchSnapshot(output.buffer);
   t.end();
 });
 
 tap.test('should allow default pino formatter', (t) => {
-  const [log, output] = createLogger({
+  const { log, output, withRequest } = createLogger(undefined, {
     formatter: new PinoLogFormatter(),
   });
 
-  log.withRequest({}, { awsRequestId: '431234' });
+  withRequest({}, { awsRequestId: '431234' });
   log.info('Message with pino formatter');
   t.matchSnapshot(output.buffer);
   t.end();
@@ -139,16 +135,16 @@ tap.test('should allow default pino formatter', (t) => {
 
 tap.test('should allow custom formatter', (t) => {
   const bananaFormatter = {
-    format(buffer: string) {
-      return `[BANANA] ${buffer}`;
-    }
+    format(data: LogData) {
+      return `[BANANA] ${JSON.stringify(data)}`;
+    },
   };
 
-  const [log, output] = createLogger({
+  const { log, output, withRequest } = createLogger(undefined, {
     formatter: bananaFormatter,
   });
 
-  log.withRequest({}, { awsRequestId: '431234' });
+  withRequest({}, { awsRequestId: '431234' });
   log.info('Message with custom formatter');
   t.matchSnapshot(output.buffer);
   t.end();
@@ -157,20 +153,42 @@ tap.test('should allow custom formatter', (t) => {
 /**
  * Creates a test logger and output buffer for assertions
  * Returns the logger and the buffer
+ * 
+ * CAUTION:
+ * Usage defined below is for the purposes of the Test Harness
+ * and is not reflective of the actual usage of pino-lambda
  */
-function createLogger(options?: ExtendedPinoOptions): [PinoLambdaLogger, { buffer: string }] {
+function createLogger(
+  options?: LoggerOptions,
+  mixedOptions?: LambdaRequestTrackerOptions & PinoLambdaOptions,
+): {
+  log: Logger;
+  output: { buffer: string };
+  withRequest: (event: LambdaEvent, context: LambdaContext) => void;
+} {
   const output = {
     buffer: 'undefined',
   };
 
-  const logger = pino({
-    ...options,
+  const destination = pinoLambdaDestination({
+    ...mixedOptions,
     streamWriter: (str: string | Uint8Array): boolean => {
       output.buffer = (str as string).trim();
       return true;
     },
-    base: null,
   });
 
-  return [logger, output];
+  const log = pino(
+    {
+      base: null,
+      ...options,
+    },
+    destination,
+  );
+
+  const withRequest = lambdaRequestTracker({
+    ...mixedOptions,
+  });
+
+  return { log, output, withRequest };
 }
