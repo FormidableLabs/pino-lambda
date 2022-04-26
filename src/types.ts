@@ -1,9 +1,4 @@
-import { LoggerOptions, Logger } from "pino";
-import { ContextStorageProvider } from "./context";
-
-export type PinoLambdaLogger = Logger & {
-  withRequest: (event: LambdaEvent, context: LambdaContext) => void;
-};
+import { ContextStorageProvider } from './context';
 
 export interface LambdaContext {
   awsRequestId: string;
@@ -21,34 +16,66 @@ export interface LambdaEvent {
   [key: string]: any;
 }
 
+export interface LogData {
+  awsRequestId: string;
+  level: string;
+  msg?: string;
+}
+
 /**
  * Interface for implementing log formatters
- * @interface ILogFormatter
  */
 export interface ILogFormatter {
   /**
    * Formats the log message using the incoming buffer
    *
-   * @param {string} buffer
+   * @param {object} data
    * @returns {string} The formatted output which must end with a newline
    * @memberof ILogFormatter
    */
-  format(buffer: string, options?: ExtendedPinoOptions): string;
+  format(data: LogData): string;
 }
 
 /**
  * Extended options for pino logging
- *
- * @export
- * @interface ExtendedPinoOptions
- * @extends {LoggerOptions}
  */
-export interface ExtendedPinoOptions extends LoggerOptions {
+export interface PinoLambdaOptions {
+  /**
+   * Custom log formatter.
+   * If not supplied, defaults to `LambdaLogFormatter`.
+   */
   formatter?: ILogFormatter;
+  /**
+   * Custom storage provider.
+   * If not supplied, defaults to global context storage.
+   * If used outside of the Lambda environment, you may want to provide
+   * your own implementation here.
+   */
+  storageProvider?: ContextStorageProvider;
+  /**
+   * Custom streamwriter.
+   * This option is currently only used for testing and development
+   */
+  streamWriter?: (str: string | Uint8Array) => boolean;
+}
+
+/**
+ * Options for extending the request context
+ */
+export interface LambdaRequestTrackerOptions {
+  /**
+   * Per request level mixin with access to the Lambda
+   * event and context information for each request
+   */
   requestMixin?: (
     event: LambdaEvent,
     context: LambdaContext,
   ) => { [key: string]: string | undefined };
+  /**
+   * Custom storage provider.
+   * If not supplied, defaults to global context storage.
+   * If used outside of the Lambda environment, you may want to provide
+   * your own implementation here.
+   */
   storageProvider?: ContextStorageProvider;
-  streamWriter?: (str: string | Uint8Array) => boolean;
 }

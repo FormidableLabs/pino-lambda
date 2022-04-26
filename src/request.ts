@@ -1,19 +1,19 @@
-import { ContextMap } from './context';
-import { LambdaEvent, LambdaContext, PinoLambdaLogger, ExtendedPinoOptions } from './types';
+import { ContextMap, GlobalContextStorageProvider } from './context';
+import { LambdaEvent, LambdaContext, LambdaRequestTrackerOptions } from './types';
 
 const AMAZON_TRACE_ID = '_X_AMZN_TRACE_ID';
 const CORRELATION_HEADER = 'x-correlation-';
 const CORRELATION_ID = `${CORRELATION_HEADER}id`;
 const CORRELATION_TRACE_ID = `${CORRELATION_HEADER}trace-id`;
-const CORRELATION_DEBUG = `${CORRELATION_HEADER}debug`;
 
-export const withRequest = (logger: PinoLambdaLogger, options: ExtendedPinoOptions) => (
+/**
+ * Creates a function for tracing Lambda request context across logging calls
+ * @param options The request options
+ */
+export const lambdaRequestTracker = (options: LambdaRequestTrackerOptions = {}) => (
   event: LambdaEvent,
   context: LambdaContext,
 ): void => {
-  // keep a reference to the original logger level
-  const configuredLevel = logger.level;
-
   const ctx: ContextMap = {
     awsRequestId: context.awsRequestId,
   };
@@ -44,14 +44,6 @@ export const withRequest = (logger: PinoLambdaLogger, options: ExtendedPinoOptio
     ctx[CORRELATION_ID] = context.awsRequestId;
   }
 
-  // if an upstream service requests DEBUG mode,
-  // dynamically modify the logging level
-  if (ctx[CORRELATION_DEBUG] === 'true') {
-    logger.level = 'debug';
-  } else {
-    logger.level = configuredLevel;
-  }
-
   // handle custom request level mixins
   if (options.requestMixin) {
     const result = options.requestMixin(event, context);
@@ -62,7 +54,8 @@ export const withRequest = (logger: PinoLambdaLogger, options: ExtendedPinoOptio
     }
   }
 
-  if (options.storageProvider) {
-    options.storageProvider.setContext(ctx);
+  const storageProvider = options.storageProvider || GlobalContextStorageProvider;
+  if (storageProvider) {
+    storageProvider.setContext(ctx);
   }
 };

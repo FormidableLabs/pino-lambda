@@ -1,7 +1,7 @@
 {
   "name": "pino-lambda",
   "version": "3.0.1",
-  "description": "Lightweight pino wrapper for AWS Lambda",
+  "description": "Pino destination formatter for AWS Lambda",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "repository": "https://github.com/formidablelabs/pino-lambda.git",
@@ -17,6 +17,7 @@
     "pretest:e2e": "yarn clean && yarn build",
     "test": "yarn test:unit",
     "test:unit": "tap src/**/*.spec.ts",
+    "test:debug": "yarn test:unit --node-arg=--inspect-brk --timeout 600",
     "test:e2e": "node ./dist/test.js",
     "semantic-release": "semantic-release"
   },

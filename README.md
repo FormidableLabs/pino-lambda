@@ -5,31 +5,38 @@ pino-lambda
 [![semantic-release](https://img.shields.io/badge/%20%20%F0%9F%93%A6%F0%9F%9A%80-semantic--release-e10079.svg)](https://github.com/semantic-release/semantic-release)
 [![Maintenance Status][maintenance-image]](#maintenance-status)
 
-A lightweight drop-in decorator for [pino](https://github.com/pinojs/pino) that takes advantage of the unique environment in AWS Lambda functions.
+A custom destination for [pino](https://github.com/pinojs/pino) that takes advantage of the unique environment in AWS Lambda functions. [ref](https://github.com/pinojs/pino/blob/master/docs/api.md#destination)
 
-By default, this wrapper reformats the log output so it matches the existing Cloudwatch format. The default pino configuration [loses some of the built in support for request ID tracing](https://github.com/pinojs/pino/issues/648) that lambda has built into Cloudwatch insights. This can be disabled or customized as needed.
+By default, this destination reformats the log output so it matches the existing Cloudwatch format. The default pino log format [loses some of the built in support for request ID tracing](https://github.com/pinojs/pino/issues/648) that lambda has built into to support Cloudwatch insights and Xray tracing.
 
-It also tracks the request id, correlation ids, and xray tracing from upstream services, and can be set to debug mode by upstream services on a per-request basis.
+It also automatically tracks the request id, correlation ids, and xray tracing from upstream services, and can be set to debug mode by upstream services on a per-request basis.
 
 ### Conceptually based on the following
 
 - [Capture and forward correlation IDs through different Lambda event sources](https://theburningmonk.com/2017/09/capture-and-forward-correlation-ids-through-different-lambda-event-sources/)
 - [Decorated Lambda Handlers](https://tlvince.com/decorated-lambda-handlers)
 
-
 ## Usage
 
-`pino-lambda` is a drop-in replacement for pino. The same configuration and setup can be used without changes.
+Basic usage for most applications
 
 ```ts
-import pino from 'pino-lambda';
-const logger = pino();
+import pino from 'pino';
+import { lambdaRequestTracker, pinoLambdaDestination } from 'pino-lambda';
+
+// custom destination formatter
+const destination = pinoLambdaDestination();
+const logger = pino({
+  // typical pino options
+}, destination);
+const withRequest = lambdaRequestTracker();
 
 async function handler(event, context) {
-  // new extension added to pino to automatically track requests across all instances of pino
-  logger.withRequest(event, context);
+  // automatic request tracing across all instances of pino
+  // called once at the beginning of your Lambda handler
+  withRequest(event, context);
 
-  // typical logging methods passthrough to pino
+  // typical logging methods
   logger.info({ data: 'Some data' }, 'A log message');
 }
 ```
@@ -50,61 +57,15 @@ other Cloudwatch aware tools such as Datadog and Splunk.
 }
 ```
 
-## Automatic Request ID Tracking
-
-All instances of `pino-lambda` will be automatically log the request id so you don't need to pass an instance of a logger to all of your functions.
-
-```ts
-// handler.js
-import pino from 'pino-lambda';
-const logger = pino();
-
-import { doSomething } from './service';
-
-async function handler(event, context) {
-  logger.withRequest(event, context);
-
-  doSomething();
-}
-```
-
-A second instance of the pino logger in another file automatically logs the request ID captured by the logger in the above handler.
-This alleviates the need to pass an instance of a logger around, or pass the context.
-
-```ts
-// service.js
-import pino from 'pino-lambda';
-const logger = pino();
-
-export function doSomething() {
-  logger.info({ data: 'Welp' }, 'Another log message');
-}
-```
-
-Cloudwatch Output
-
-```
-2018-12-20T17:05:25.330Z    6fccb00e-0479-11e9-af91-d7ab5c8fe19e    INFO  A log message
-{
-   "awsRequestId": "6fccb00e-0479-11e9-af91-d7ab5c8fe19e",
-   "x-correlation-id": "238da608-0542-11e9-8eb2-f2801f1b9fd1",
-   "x-correlation-trace-id": "Root=1-5c1bcbd2-9cce3b07143efd5bea1224f2;Parent=07adc05e4e92bf13;Sampled=1",
-   "level": 30,
-   "message": "A log message",
-   "data": "Some data"
-}
-```
-
 ## Lambda request tracing
 
-By default, the following event data is tracked for each log statement.
+With context tracing enabled, all instances of `pino` that use one of the built in formatters will automatically log the request id and other details so you don't need to pass an instance of a logger to all of your functions.
 
 | Property                  | Value                                      | Info                                                                     |
 | ------------------------- | ------------------------------------------ | ------------------------------------------------------------------------ |
 | awsRequestId              | context.awsRequestId                       | The unique request id for this request                                   |
 | apiRequestId              | context.requestContext.requestId           | The API Gateway RequestId                                                |
 | x-correlation-id          | event.headers['x-correlation-id']          | The upstream request id for tracing                                      |
-| x-correlation-trace-debug | event.headers['x-correlation-debug']       | The upstream service wants debug logs enabled for this request           |
 | x-correlation-trace-id    | process.env._X_AMZN_TRACE_ID               | The AWS Xray tracking id                                                 |
 | x-correlation-\*          | event.headers.startsWith('x-correlation-') | Any header that starts with `x-correlation-` will be automatically added |
 
@@ -124,8 +85,12 @@ This differs from the built in [pino mixin](https://github.com/pinojs/pino/blob/
 once per request where the built in pino mixin runs once per log entry.
 
 ```ts
-import pino from 'pino-lambda';
-const logger = pino({
+import pino from 'pino';
+import { lambdaRequestTracker, pinoLambdaDestination } from 'pino-lambda';
+
+const destination = pinoLambdaDestination();
+const logger = pino(destination);
+const withRequest = lambdaRequestTracker({
   requestMixin: (event, context) => {
     return {
       // add request header host name
@@ -140,6 +105,11 @@ const logger = pino({
     };
   }
 });
+
+async function handler(event, context) {
+  withRequest(event, context);
+  logger.info({ data: 'Some data' }, 'A log message');
+}
 ```
 
 Output
@@ -159,14 +129,26 @@ Output
 
 ## Customize output format
 
-If you want the request tracing features, but don't need the Cloudwatch format, you can use the default pino formatter, or supply your own formatter.
+By default, the `pinoLambdaDestination` uses the `CloudwatchLogFormatter`. If you want the request tracing features of `pino-lambda`, but don't need the Cloudwatch format, you can use the `PinoLogFormatter` which matches the default object output format of `pino`.
 
 ```ts
-// default Pino formatter for logs
-import pino, { PinoLogFormatter } from 'pino-lambda';
-const logger = pino({
+import pino from 'pino';
+import { 
+  lambdaRequestTracker, 
+  pinoLambdaDestination,
+  PinoLogFormatter
+} from 'pino-lambda';
+
+const destination = pinoLambdaDestination({
   formatter: new PinoLogFormatter(),
 });
+const logger = pino(destination);
+const withRequest = lambdaRequestTracker();
+
+async function handler(event, context) {
+  withRequest(event, context);
+  logger.info({ data: 'Some data' }, 'A log message');
+}
 ```
 
 Output
@@ -176,27 +158,26 @@ Output
    "awsRequestId": "6fccb00e-0479-11e9-af91-d7ab5c8fe19e",
    "x-correlation-trace-id": "Root=1-5c1bcbd2-9cce3b07143efd5bea1224f2;Parent=07adc05e4e92bf13;Sampled=1",
    "level": 30,
-   "host": "www.host.com",
-   "brand": "famicom",
    "message": "A log message",
    "data": "Some data"
 }
 ```
 
-The formatter function can be replaced with any custom implementation you require by using the supplied interface.
+The formatter function can also be replaced with any custom implementation you need by using the supplied interface.
 
 ```ts
-import pino, { ExtendedPinoLambdaOptions, ILogFormatter } from 'pino-lambda';
+import { LogData, ILogFormatter } from 'pino-lambda';
 
 class BananaLogFormatter implements ILogFormatter {
-  format(buffer: string, options: ExtendedPinoLambdaOptions) {
-    return `[BANANA] ${buffer}`;
+  format(data: LogData) {
+    return `[BANANA] ${JSON.stringify(data)}`;
   }
 }
 
-const logger = pino({
+const destination = pinoLambdaDestination({
   formatter: new BananaLogFormatter(),
 });
+const logger = pino(destination);
 ```
 
 Output
@@ -207,16 +188,40 @@ Output
    "awsRequestId": "6fccb00e-0479-11e9-af91-d7ab5c8fe19e",
    "x-correlation-trace-id": "Root=1-5c1bcbd2-9cce3b07143efd5bea1224f2;Parent=07adc05e4e92bf13;Sampled=1",
    "level": 30,
-   "host": "www.host.com",
-   "brand": "famicom",
    "message": "A log message",
    "data": "Some data"
 }
 ```
 
-## Downstream Request Debugging
+## Best Practices
 
-When upstream services invoke a Lambda using `pino-lambda` they can send the `x-correlation-debug` header with a value of `true`. This will enable `debug` logging for that specific request. This is useful for tracing issues across the platform.
+Unless your application is small, it can be useful to split the logger into its own module for easier reuse across your application code. This ensures that all your logging calls receive the correct formatting and context across the request.
+
+```ts
+// logger.ts
+import pino from 'pino';
+import { pinoLambdaDestination } from 'pino-lambda';
+
+const destination = pinoLambdaDestination();
+export const logger = pino(destination);
+```
+
+```ts
+// handler.ts
+import { lambdaRequestTracker } from 'pino-lambda';
+import { logger } from './logger';
+
+const withRequest = lambdaRequestTracker();
+
+async function handler(event, context) {
+  // automatic request tracing across all instances of pino
+  // called once at the beginning of your Lambda handler
+  withRequest(event, context);
+
+  // typical logging methods
+  logger.info({ data: 'Some data' }, 'A log message');
+}
+```
 
 ## Usage outside of Lambda handlers
 

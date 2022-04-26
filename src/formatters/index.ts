@@ -1,2 +1,2 @@
-export * from './cloudwatch';
+export * from './lambda';
 export * from './pino';
