@@ -7,12 +7,15 @@ import { PinoLambdaOptions } from './types';
  * Custom destination stream for pino
  * @param options Options
  */
-export const pinoLambdaDestination = (options: PinoLambdaOptions = {}): Writable => {
+export const pinoLambdaDestination = (
+  /* istanbul ignore next */
+  options: PinoLambdaOptions = {},
+): Writable => {
   const writeable = new Writable({
     defaultEncoding: 'utf8',
     write(chunk, encoding, callback) {
       const storageProvider = options.storageProvider || GlobalContextStorageProvider;
-      const formatter = options?.formatter || new CloudwatchLogFormatter();
+      const formatter = options.formatter || new CloudwatchLogFormatter();
 
       const data = JSON.parse(chunk);
       const lambdaContext = storageProvider.getContext() || {};
@@ -26,6 +29,7 @@ export const pinoLambdaDestination = (options: PinoLambdaOptions = {}): Writable
       // final entry must end with carriage return
       output += '\n';
 
+      /* istanbul ignore else */
       if (options.streamWriter) {
         options.streamWriter(output);
       } else {

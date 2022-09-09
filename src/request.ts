@@ -10,10 +10,10 @@ const CORRELATION_TRACE_ID = `${CORRELATION_HEADER}trace-id`;
  * Creates a function for tracing Lambda request context across logging calls
  * @param options The request options
  */
-export const lambdaRequestTracker = (options: LambdaRequestTrackerOptions = {}) => (
-  event: LambdaEvent,
-  context: LambdaContext,
-): void => {
+export const lambdaRequestTracker = (
+  /* istanbul ignore next */
+  options: LambdaRequestTrackerOptions = {},
+) => (event: LambdaEvent, context: LambdaContext): void => {
   const ctx: ContextMap = {
     awsRequestId: context.awsRequestId,
   };
@@ -40,6 +40,7 @@ export const lambdaRequestTracker = (options: LambdaRequestTrackerOptions = {}) 
   }
 
   // set the correlation id if not already set by upstream callers
+  /* istanbul ignore next */
   if (!ctx[CORRELATION_ID]) {
     ctx[CORRELATION_ID] = context.awsRequestId;
   }
@@ -55,6 +56,7 @@ export const lambdaRequestTracker = (options: LambdaRequestTrackerOptions = {}) 
   }
 
   const storageProvider = options.storageProvider || GlobalContextStorageProvider;
+  /* istanbul ignore next */
   if (storageProvider) {
     storageProvider.setContext(ctx);
   }

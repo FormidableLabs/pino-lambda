@@ -45,10 +45,26 @@ exports[`src/tests/index.spec.ts TAP should log an info message with requestId >
 2016-12-01T06:00:00.000Z	12345	INFO	Message with request ID	{"awsRequestId":"12345","x-correlation-id":"12345","level":30,"time":1480572000000,"msg":"Message with request ID"}
 `
 
+exports[`src/tests/index.spec.ts TAP should log capitalize string levels > must match snapshot 1`] = `
+2016-12-01T06:00:00.000Z	12345	DEBUG	Simple message	{"awsRequestId":"12345","x-correlation-id":"12345","level":"debug","time":1480572000000,"msg":"Simple message"}
+`
+
 exports[`src/tests/index.spec.ts TAP should log correlation headers > must match snapshot 1`] = `
 2016-12-01T06:00:00.000Z	98875	ERROR	Message with correlation ids	{"awsRequestId":"98875","x-correlation-data":"abbb","x-correlation-service":"tyue","x-correlation-id":"98875","level":50,"time":1480572000000,"msg":"Message with correlation ids"}
 `
 
+exports[`src/tests/index.spec.ts TAP should not fail if level is an object > must match snapshot 1`] = `
+2016-12-01T06:00:00.000Z	12345	[object Object]	Simple message	{"awsRequestId":"12345","x-correlation-id":"12345","level":{},"time":1480572000000,"msg":"Simple message"}
+`
+
+exports[`src/tests/index.spec.ts TAP should not fail if level number is invalid > must match snapshot 1`] = `
+2016-12-01T06:00:00.000Z	12345	undefined	Simple message	{"awsRequestId":"12345","x-correlation-id":"12345","level":98,"time":1480572000000,"msg":"Simple message"}
+`
+
 exports[`src/tests/index.spec.ts TAP should preserve mixins > must match snapshot 1`] = `
 2016-12-01T06:00:00.000Z	431234	INFO	Message with mixin line 2	{"awsRequestId":"431234","x-correlation-id":"431234","level":30,"time":1480572000000,"line":2,"msg":"Message with mixin line 2"}
+`
+
+exports[`src/tests/index.spec.ts TAP should set correlation if to trace id if present > must match snapshot 1`] = `
+2016-12-01T06:00:00.000Z	98875	ERROR	Message with trace id	{"awsRequestId":"98875","x-correlation-trace-id":"168181818","x-correlation-id":"98875","level":50,"time":1480572000000,"msg":"Message with trace id"}
 `

@@ -49,6 +49,30 @@ tap.test('should log an error message with requestId', (t) => {
   t.end();
 });
 
+tap.test('should log capitalize string levels', (t) => {
+  const { log, output } = createLogger();
+
+  log.info({ level: 'debug' }, 'Simple message');
+  t.matchSnapshot(output.buffer);
+  t.end();
+});
+
+tap.test('should not fail if level is an object', (t) => {
+  const { log, output } = createLogger();
+
+  log.info({ level: {} }, 'Simple message');
+  t.matchSnapshot(output.buffer);
+  t.end();
+});
+
+tap.test('should not fail if level number is invalid', (t) => {
+  const { log, output } = createLogger();
+
+  log.info({ level: 98 }, 'Simple message');
+  t.matchSnapshot(output.buffer);
+  t.end();
+});
+
 tap.test('should log correlation headers', (t) => {
   const { log, output, withRequest } = createLogger();
 
@@ -58,6 +82,22 @@ tap.test('should log correlation headers', (t) => {
   );
   log.error('Message with correlation ids');
   t.matchSnapshot(output.buffer);
+  t.end();
+});
+
+tap.test('should set correlation if to trace id if present', (t) => {
+  const { log, output, withRequest } = createLogger();
+
+  process.env['_X_AMZN_TRACE_ID'] = '168181818';
+  
+  withRequest(
+    {},
+    { awsRequestId: '98875' },
+  );
+  log.error('Message with trace id');
+  t.matchSnapshot(output.buffer);
+
+  delete process.env['_X_AMZN_TRACE_ID'];
   t.end();
 });
 
