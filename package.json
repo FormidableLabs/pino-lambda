@@ -51,7 +51,7 @@
     "pino-pretty": "^9.1.0",
     "prettier": "^2.2.1",
     "rimraf": "^3.0.2",
-    "semantic-release": "^17.3.1",
+    "semantic-release": "^21.0.2",
     "sinon": "^9.2.2",
     "tap": "^16.3.0",
     "ts-node": "^10.9.1",
