@@ -25,9 +25,12 @@ import { lambdaRequestTracker, pinoLambdaDestination } from 'pino-lambda';
 
 // custom destination formatter
 const destination = pinoLambdaDestination();
-const logger = pino({
-  // typical pino options
-}, destination);
+const logger = pino(
+  {
+    // typical pino options
+  },
+  destination,
+);
 const withRequest = lambdaRequestTracker();
 
 async function handler(event, context) {
@@ -60,13 +63,13 @@ other Cloudwatch aware tools such as Datadog and Splunk.
 
 With context tracing enabled, all instances of `pino` that use one of the built in formatters will automatically log the request id and other details so you don't need to pass an instance of a logger to all of your functions.
 
-| Property                  | Value                                      | Info                                                                     |
-| ------------------------- | ------------------------------------------ | ------------------------------------------------------------------------ |
-| awsRequestId              | context.awsRequestId                       | The unique request id for this request                                   |
-| apiRequestId              | context.requestContext.requestId           | The API Gateway RequestId                                                |
-| x-correlation-id          | event.headers['x-correlation-id']          | The upstream request id for tracing                                      |
-| x-correlation-trace-id    | process.env._X_AMZN_TRACE_ID               | The AWS Xray tracking id                                                 |
-| x-correlation-\*          | event.headers.startsWith('x-correlation-') | Any header that starts with `x-correlation-` will be automatically added |
+| Property               | Value                                      | Info                                                                     |
+| ---------------------- | ------------------------------------------ | ------------------------------------------------------------------------ |
+| awsRequestId           | context.awsRequestId                       | The unique request id for this request                                   |
+| apiRequestId           | context.requestContext.requestId           | The API Gateway RequestId                                                |
+| x-correlation-id       | event.headers['x-correlation-id']          | The upstream request id for tracing                                      |
+| x-correlation-trace-id | process.env.\_X_AMZN_TRACE_ID              | The AWS Xray tracking id                                                 |
+| x-correlation-\*       | event.headers.startsWith('x-correlation-') | Any header that starts with `x-correlation-` will be automatically added |
 
 Every AWS Lambda request contains a unique request ID, `context.awsRequestId`. If the request originated outside of the AWS platform,
 the request ID will match the `event.header.x-correlation-id` value. However, if the request originated from within the AWS platform,
@@ -77,7 +80,7 @@ Amazon XRAY also has a unique tracing ID that is propagated across the requests 
 
 ## Customize request tracing
 
-You can customize the data that is tracked for each request by adding a per-request mixin. 
+You can customize the data that is tracked for each request by adding a per-request mixin.
 The request mixin takes the Lambda `event` and `context` and returns an object.
 
 This differs from the built in [pino mixin](https://github.com/pinojs/pino/blob/master/docs/api.md#mixin-function) as it only executes
@@ -100,9 +103,9 @@ const withRequest = lambdaRequestTracker({
       'x-correlation-id': undefined,
 
       // add any type of static data
-      brand: 'famicom'
+      brand: 'famicom',
     };
-  }
+  },
 });
 
 async function handler(event, context) {
@@ -132,11 +135,7 @@ By default, the `pinoLambdaDestination` uses the `CloudwatchLogFormatter`. If yo
 
 ```ts
 import pino from 'pino';
-import { 
-  lambdaRequestTracker, 
-  pinoLambdaDestination,
-  PinoLogFormatter
-} from 'pino-lambda';
+import { lambdaRequestTracker, pinoLambdaDestination, PinoLogFormatter } from 'pino-lambda';
 
 const destination = pinoLambdaDestination({
   formatter: new PinoLogFormatter(),
@@ -226,6 +225,9 @@ async function handler(event, context) {
 
 You can use the this wrapper outside of the AWS lambda function in any place you want. This is especially useful in private npm modules that will be used by your AWS Lambda function. The default logger context is a shared instance, so it inherits all properties the default is configured for, and will emit request information for all logs. This effectively allows you to track a request across its entire set of log entries.
 
+## Contributing
+
+Please see our [contributing guide](CONTRIBUTING.md).
 
 ## Maintenance Status
 
