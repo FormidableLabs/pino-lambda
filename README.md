@@ -8,7 +8,7 @@ A custom destination for [pino](https://github.com/pinojs/pino) that takes advan
 
 By default, this destination reformats the log output so it matches the existing Cloudwatch format. The default pino log format [loses some of the built in support for request ID tracing](https://github.com/pinojs/pino/issues/648) that lambda has built into to support Cloudwatch insights and Xray tracing.
 
-It also automatically tracks the request id, correlation ids, and xray tracing from upstream services, and can be set to debug mode by upstream services on a per-request basis.
+It also automatically tracks the request id, correlation ids, and xray tracing from upstream services.
 
 ### Conceptually based on the following
 
