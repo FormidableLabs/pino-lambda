@@ -1,4 +1,4 @@
-// reexport all public types
+export * from './context';
 export * from './destination';
 export * from './formatters';
 export * from './request';

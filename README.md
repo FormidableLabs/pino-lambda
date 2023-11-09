@@ -59,6 +59,17 @@ other Cloudwatch aware tools such as Datadog and Splunk.
 }
 ```
 
+## Context Updates
+
+The request logging context can be updated downstream by calling the `updateContext` function. Any duplicate values will overwrite previous values.
+
+_Note: If you provide a custom storage context, you will need to update that storage context directly (this is not typical)_
+
+```
+import { GlobalContextStorageProvider } from 'pino-lambda';
+GlobalContextStorageProvider.updateContext({ userId: '12' });
+```
+
 ## Lambda request tracing
 
 With context tracing enabled, all instances of `pino` that use one of the built in formatters will automatically log the request id and other details so you don't need to pass an instance of a logger to all of your functions.
