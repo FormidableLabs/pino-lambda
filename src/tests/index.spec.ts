@@ -13,6 +13,8 @@ import {
   LogData,
 } from '../';
 
+import { GlobalContextStorageProvider } from '../context';
+
 sinon.useFakeTimers(Date.UTC(2016, 11, 1, 6, 0, 0, 0));
 
 tap.test('should log a simple info message', (t) => {
@@ -81,6 +83,21 @@ tap.test('should log correlation headers', (t) => {
     { awsRequestId: '98875' },
   );
   log.error('Message with correlation ids');
+  t.matchSnapshot(output.buffer);
+  t.end();
+});
+
+tap.test('should allow modifying the global context', (t) => {
+  const { log, output, withRequest } = createLogger();
+
+  withRequest(
+    { headers: { 'x-correlation-data': 'abbb' } },
+    { awsRequestId: '98875' },
+  );
+
+  GlobalContextStorageProvider.updateContext({ userId: '12' });
+
+  log.error('Context updates');
   t.matchSnapshot(output.buffer);
   t.end();
 });
