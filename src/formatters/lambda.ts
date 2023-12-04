@@ -1,14 +1,5 @@
-import pino from 'pino';
 import { ILogFormatter, LogData } from '../types';
-
-const formatLevel = (level: string | number): string => {
-  if (typeof level === 'string') {
-    return level.toLocaleUpperCase();
-  } else if (typeof level === 'number') {
-    return pino.levels.labels[level]?.toLocaleUpperCase();
-  }
-  return level;
-};
+import { formatLevel } from './format';
 
 /**
  * Formats the log in native cloudwatch format and
