@@ -25,6 +25,10 @@ exports[`src/tests/index.spec.ts TAP should allow removing default request data 
 2016-12-01T06:00:00.000Z	431234	INFO	Message with trace ID	{"awsRequestId":"431234","level":30,"time":1480572000000,"msg":"Message with trace ID"}
 `
 
+exports[`src/tests/index.spec.ts TAP should allow structured logging format for cloudwatch > must match snapshot 1`] = `
+{"timestamp":"2016-12-01T06:00:00.000Z","level":"INFO","requestId":"431234","message":{"x-correlation-id":"431234","time":1480572000000,"msg":"Message with pino formatter"}}
+`
+
 exports[`src/tests/index.spec.ts TAP should capture custom request data > must match snapshot 1`] = `
 2016-12-01T06:00:00.000Z	431234	INFO	Message with trace ID	{"awsRequestId":"431234","x-correlation-id":"431234","host":"www.host.com","level":30,"time":1480572000000,"msg":"Message with trace ID"}
 `

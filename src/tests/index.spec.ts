@@ -11,6 +11,7 @@ import {
   LambdaEvent,
   PinoLogFormatter,
   LogData,
+  StructuredLogFormatter,
 } from '../';
 
 import { GlobalContextStorageProvider } from '../context';
@@ -182,6 +183,17 @@ tap.test('should allow removing default request data', (t) => {
 tap.test('should allow default pino formatter', (t) => {
   const { log, output, withRequest } = createLogger(undefined, {
     formatter: new PinoLogFormatter(),
+  });
+
+  withRequest({}, { awsRequestId: '431234' });
+  log.info('Message with pino formatter');
+  t.matchSnapshot(output.buffer);
+  t.end();
+});
+
+tap.test('should allow structured logging format for cloudwatch', (t) => {
+  const { log, output, withRequest } = createLogger(undefined, {
+    formatter: new StructuredLogFormatter(),
   });
 
   withRequest({}, { awsRequestId: '431234' });

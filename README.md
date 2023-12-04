@@ -140,9 +140,46 @@ Output
 }
 ```
 
-## Customize output format
+### Lambda Structured Log Format
 
-By default, the `pinoLambdaDestination` uses the `CloudwatchLogFormatter`. If you want the request tracing features of `pino-lambda`, but don't need the Cloudwatch format, you can use the `PinoLogFormatter` which matches the default object output format of `pino`.
+By default, the `pinoLambdaDestination` uses the `CloudwatchLogFormatter`. 
+
+If you would like to use the new [AWS Lambda Advanced Logging Controls](https://aws.amazon.com/blogs/compute/introducing-advanced-logging-controls-for-aws-lambda-functions/) format for your logs, ensure your Lambda function is properly configured and enable `StructuredLogFormatter` in `pino-lambda`.
+
+```ts
+import pino from 'pino';
+import { lambdaRequestTracker, pinoLambdaDestination, StructuredLogFormatter } from 'pino-lambda';
+
+const destination = pinoLambdaDestination({
+  formatter: new StructuredLogFormatter()
+});
+const logger = pino(destination);
+const withRequest = lambdaRequestTracker();
+
+async function handler(event, context) {
+  withRequest(event, context);
+  logger.info({ data: 'Some data' }, 'A log message');
+}
+```
+
+Output
+
+```json
+{
+  "timestamp": "2016-12-01T06:00:00.000Z",
+  "requestId": "6fccb00e-0479-11e9-af91-d7ab5c8fe19e",
+  "level": "INFO",
+  "message": {
+    "msg": "A log message",
+    "data": "Some data",
+    "x-correlation-trace-id": "Root=1-5c1bcbd2-9cce3b07143efd5bea1224f2;Parent=07adc05e4e92bf13;Sampled=1"
+  }
+}
+```
+
+### Pino Log Format
+
+If you want the request tracing features of `pino-lambda`, but don't need the Cloudwatch format, you can use the `PinoLogFormatter` which matches the default object output format of `pino`.
 
 ```ts
 import pino from 'pino';
@@ -162,15 +199,18 @@ async function handler(event, context) {
 
 Output
 
-```
+```json
 {
-   "awsRequestId": "6fccb00e-0479-11e9-af91-d7ab5c8fe19e",
-   "x-correlation-trace-id": "Root=1-5c1bcbd2-9cce3b07143efd5bea1224f2;Parent=07adc05e4e92bf13;Sampled=1",
-   "level": 30,
-   "message": "A log message",
-   "data": "Some data"
+  "awsRequestId": "6fccb00e-0479-11e9-af91-d7ab5c8fe19e",
+  "x-correlation-trace-id": "Root=1-5c1bcbd2-9cce3b07143efd5bea1224f2;Parent=07adc05e4e92bf13;Sampled=1",
+  "level": 30,
+  "time": 1480572000000,
+  "msg": "A log message",
+  "data": "Some data"
 }
 ```
+
+### Custom Log Format
 
 The formatter function can also be replaced with any custom implementation you need by using the supplied interface.
 
@@ -197,7 +237,7 @@ Output
    "awsRequestId": "6fccb00e-0479-11e9-af91-d7ab5c8fe19e",
    "x-correlation-trace-id": "Root=1-5c1bcbd2-9cce3b07143efd5bea1224f2;Parent=07adc05e4e92bf13;Sampled=1",
    "level": 30,
-   "message": "A log message",
+   "msg": "A log message",
    "data": "Some data"
 }
 ```
