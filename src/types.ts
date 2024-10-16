@@ -70,7 +70,7 @@ export interface LambdaRequestTrackerOptions {
   requestMixin?: (
     event: LambdaEvent,
     context: LambdaContext,
-  ) => { [key: string]: string | undefined };
+  ) => { [key: string]: unknown };
   /**
    * Custom storage provider.
    * If not supplied, defaults to global context storage.

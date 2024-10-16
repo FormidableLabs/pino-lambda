@@ -180,6 +180,23 @@ tap.test('should allow removing default request data', (t) => {
   t.end();
 });
 
+tap.test('should allow different types of context values', (t) => {
+  const { log, output, withRequest } = createLogger(undefined, {
+    requestMixin: () => ({
+      'number': 12,
+      'boolean': true,
+      'object': {
+        foo: "bar"
+      }
+    }),
+  });
+
+  withRequest({}, { awsRequestId: '431234' });
+  log.info('Message with trace ID');
+  t.matchSnapshot(output.buffer);
+  t.end();
+});
+
 tap.test('should allow default pino formatter', (t) => {
   const { log, output, withRequest } = createLogger(undefined, {
     formatter: new PinoLogFormatter(),
