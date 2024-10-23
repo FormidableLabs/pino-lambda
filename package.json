@@ -1,6 +1,6 @@
 {
   "name": "pino-lambda",
-  "version": "4.4.0",
+  "version": "4.4.1",
   "description": "Pino destination formatter for AWS Lambda",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
