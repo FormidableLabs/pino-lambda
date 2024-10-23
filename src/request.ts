@@ -26,17 +26,16 @@ export const lambdaRequestTracker = (
 
   // capture any correlation headers sent from upstream callers
   if (event.headers) {
-    Object.keys(event.headers).forEach((header) => {
+    for (const [header, value] of Object.entries(event.headers)) {
       if (header.toLowerCase().startsWith(CORRELATION_HEADER)) {
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        ctx[header] = event.headers![header] as string;
+        ctx[header] = value;
       }
-    });
+    }
   }
 
   // capture the xray trace id if its enabled
   if (process.env[AMAZON_TRACE_ID]) {
-    ctx[CORRELATION_TRACE_ID] = process.env[AMAZON_TRACE_ID] as string;
+    ctx[CORRELATION_TRACE_ID] = process.env[AMAZON_TRACE_ID];
   }
 
   // set the correlation id if not already set by upstream callers
@@ -49,9 +48,8 @@ export const lambdaRequestTracker = (
   if (options.requestMixin) {
     const result = options.requestMixin(event, context);
     for (const key in result) {
-      // Cast this to string for typescript
       // when the JSON serializer runs, by default it omits undefined properties
-      ctx[key] = result[key] as string;
+      ctx[key] = result[key];
     }
   }
 
